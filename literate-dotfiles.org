@@ -1,0 +1,579 @@
+#+title: Farlado's Illiterate Dotfiles
+#+subtitle: A far-from-sane literate dotfiles configuration
+#+author: Farlado
+#+language: en
+#+options: num:nil toc:1
+
+* Table of Contents :toc:quote:
+#+BEGIN_QUOTE
+- [[#about-this-configuration][About this configuration]]
+  - [[#benefits][Benefits]]
+  - [[#limitations][Limitations]]
+  - [[#installation][Installation]]
+  - [[#license][License]]
+- [[#on-tangle][On tangle]]
+  - [[#making-the-proper-paths][Making the proper paths]]
+  - [[#tangling-absolute-paths][Tangling absolute paths]]
+  - [[#tangling-the-right-size-values][Tangling the right size values]]
+- [[#shell][Shell]]
+  - [[#on-login-zprofile][On login (~.zprofile~)]]
+  - [[#quiet-login-hushlogin][Quiet login (~.hushlogin~)]]
+  - [[#configuration-zshrc][Configuration (~.zshrc~)]]
+- [[#x-session][X session]]
+  - [[#on-x-startup-xinitrc][On X startup (~.xinitrc~)]]
+  - [[#gtk2-appearance-gtkrc][GTK2 Appearance (~gtkrc~)]]
+  - [[#gtk3-appearance-settingsini][GTK3 appearance (~settings.ini~)]]
+- [[#music-player-mpdconf][Music player (~mpd.conf~)]]
+#+END_QUOTE
+
+* About this configuration
+This is an attempt at a literate dotfiles configuration. Originally my dotfiles repository was a massive mess of multiple files strewn across multiple directories. Inspired by the success that is [[https://github.com/farlado/dotemacs/][my Emacs configuration]] and the XDG Base Directory Specification, I decided to start condensing my dotfiles into a single ~org-mode~ file tangled into files centered mostly around =$XDG_CONFIG_HOME=, albeit with incredibly mixed results.
+
+** Benefits
+Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME= so I now my git repository doesn't sit bare. This means I don't need to use that dumb alias I had anymore. /Emacs dotfiles management, baby./ It also means all my config files are kept in a single place, which means I don't have to dig everywhere for whatever is the matter.
+
+** Limitations
+This repository is still very much a hybrid of literate files and files that very much are not literate. However, it should be possible, so long as these files are placed into the right directories, to end up with a working desktop environment. I also do a lot of system configuration, but it's done in a [[file:literate-sysconfig.org][different file]].
+
+** Installation
+1. Clone the repository
+2. Checkout its contents
+3. +Run the deploy script within (which will install all dependencies too)+ This is currently borked to hell, do not bother, it will be fixed in due time. See more about it [[file:deploy/literate-deploy.org][here]]. (coming soon)
+
+From a command line, this should look like:
+#+begin_src sh
+  $ git clone --bare https://github.com/farlado/dotfiles $HOME/.config/dotfiles
+  $ git --git-dir=$HOME/.config/dotfiles --work-tree=$HOME checkout
+  $ $HOME/.config/deploy/deploy
+#+end_src
+
+** License
+Because I +am a lazy piece of shit who doesn't like long licenses+ do not think much harm could come from using a pushover license for dotfiles, I am publishing this literate Emacs configuration under the WTFPL.
+#+begin_src text :tangle (user-config-file "LICENSE")
+  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+  Version 2, December 2004
+
+  Copyright (c) 2019-20 Farlado
+
+  Everyone is permitted to copy and distribute verbatim or modified
+  copies of this license document, and changing it is allowed as long
+  as the name is changed.
+
+             DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+   0. You just DO WHAT THE FUCK YOU WANT TO.
+#+end_src
+
+* On tangle
+  :properties:
+  :header-args: :tangle no
+  :end:
+There are some fields which require absolute paths, and some which require size values. This means I have to use some ~noweb~ referencing to get my proper absolute paths. I define all of these references here.
+
+** Making the proper paths
+In order for tangling to work, the proper paths have to be present. This is done with a hidden block that tangles to a temporary file out in the middle of nowhere.
+#+name: mkdir
+#+begin_src emacs-lisp
+  (dolist (directory '(".cache/zsh"
+                       ".config/mpd"
+                       ".config/gtk-2.0"
+                       ".config/gtk-3.0"
+                       ".local/share/zsh"))
+    (make-directory (expand-file-name directory (getenv "HOME")) t))
+#+end_src
+#+begin_src text :tangle /tmp/dots :noweb yes :exports none
+  <<mkdir()>>
+#+end_src
+
+** Tangling absolute paths
+*** =$HOME=
+#+name: HOME
+#+begin_src emacs-lisp
+  (getenv "HOME")
+#+end_src
+
+*** =$XDG_CONFIG_HOME=
+#+name: XDG_CONFIG_HOME
+#+begin_src emacs-lisp
+  (getenv "XDG_CONFIG_HOME")
+#+end_src
+
+** Tangling the right size values
+In order to tangle the right sizes, I need to know which of my two laptops is tangling the configuration.
+
+*** Font size
+#+name: fontsize
+#+begin_src emacs-lisp
+  (if (= (shell-command "grep W541 /sys/devices/virtual/dmi/id/product_version") 0)
+      18
+    10)
+#+end_src
+
+*** Cursor size
+#+name: cursorsize
+#+begin_src emacs-lisp
+  (if (= (shell-command "grep W541 /sys/devices/virtual/dmi/id/product_version") 0)
+      48
+    24)
+#+end_src
+
+* Shell
+** On login (~.zprofile~)
+   :properties:
+   :header-args: :tangle (user-home-file ".zprofile")
+   :end:
+The ~.zprofile~ file is sourced before ~.zshrc~ and is kept slim so that whatever kind of session is meant to load is loaded as fast as possible.
+
+*** Respect XDG Base Directory Specification
+The XDG Base Directory Specification is meant to define where to store configurations, caches, and data for the user. Even /Emacs/ respects this by default now. It cleans up the home directory considerably, but also introduces a cooler side effect: it makes portability a lot easier.
+#+begin_src sh
+  export XDG_DATA_HOME="$HOME/.local/share"
+  export XDG_CONFIG_HOME="$HOME/.config"
+  export XDG_BIN_HOME="$HOME/.local/bin"
+  export XDG_LIB_HOME="$HOME/.local/lib"
+  export XDG_CACHE_HOME="$HOME/.cache"
+#+end_src
+
+*** Find an Emacs dump image if exists
+Recently I have started to experiment with using a portable dumper image to load Emacs faster. If one exists, I want to load it.
+#+begin_src sh
+  if [[ -f $XDG_CONFIG_HOME/emacs/emacs.pdmp ]]; then
+      export _EMACS_DUMP_FILE="--dump-file=$XDG_CONFIG_HOME/emacs/emacs.pdmp"
+  fi
+#+end_src
+
+*** Set default programs
+The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my browser.
+#+begin_src sh
+  export EDITOR=emacsclient
+  export VISUAL=emacsclient
+  export BROWSER=firefox
+#+end_src
+
+*** Login behavior
+- On =tty1=, start an X window session.
+- On =tty2=, start Emacs in the =tty=
+- On any other =tty=, start normally.
+#+begin_src sh
+  case $(tty | sed 's/\/dev\/tty//') in
+      1) exec startx &> /dev/null;;
+      2) exec emacs $_EMACS_DUMP_FILE;;
+  esac
+#+end_src
+
+** Quiet login (~.hushlogin~)
+   :properties:
+   :header-args: :tangle (user-home-file ".hushlogin")
+   :end:
+I don't need to know the last time I logged in, I'd rather the login process be as quiet as possible. This file needs no actual contents, so the block that makes the file is not exported.
+#+begin_src :exports none
+#+end_src
+
+** Configuration (~.zshrc~)
+   :properties:
+   :header-args: :tangle (expand-file-name ".zshrc" (getenv "HOME"))
+   :end:
+I have come to appreciate what ~zsh~ has to offer, namely its completions and ease of customization.
+
+*** Aliases
+**** File management
+- Copying should be interactive
+- Displaying file sizes should be human-readable
+- Displaying disk usage should be human-readable
+- Punish misspelling =ls=
+- Listing directory contents should be colorful
+- Listing all directory contents should be its own command
+- Listing directory contents as a list should be its own command
+- Listing all directory contents as a list should be its own command
+#+begin_src sh
+  alias cp="cp -i"
+  alias du="du -h"
+  alias df="df -h"
+  alias sl="sl -lF"
+  alias ls="ls -h --color=always --group-directories-first"
+  alias lsa="ls -ah --color=always --group-directories-first"
+  alias lsl="ls -lh --color=always --group-directories-first"
+  alias lsal="ls -lah --color=always --group-directories-first"
+#+end_src
+
+**** System management
+- Getting to the Bluetooth control shell should be easy
+- Showing free memory should be human-readable
+- Doing git commands for dotfiles should be easy
+#+begin_src sh
+  alias bt="bluetoothctl"
+  alias free="free -mh"
+#+end_src
+
+*** Completions
+**** Automatically configured
+This was automagically generated the first time I used ~zsh~, and the only time it has needed a change is to store ~zcompdump~ in a more XDG compliant place.
+#+begin_src sh
+  zstyle ':completion:*' completer _list _complete _match _correct _approximate _prefix
+  zstyle ':completion:*' completions 1
+  zstyle ':completion:*' condition 0
+  zstyle ':completion:*' expand prefix suffix
+  zstyle ':completion:*' file-sort name
+  zstyle ':completion:*' format '%d'
+  zstyle ':completion:*' group-name ''
+  zstyle ':completion:*' ignore-parents parent pwd directory
+  zstyle ':completion:*' insert-unambiguous true
+  zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+  zstyle ':completion:*' list-prompt '%SAt %p: Hit TAB for more, or the character to insert%s'
+  zstyle ':completion:*' list-suffixes true
+  zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|[._-]=** r:|=**'
+  zstyle ':completion:*' max-errors 3
+  zstyle ':completion:*' menu select=5
+  zstyle ':completion:*' original true
+  zstyle ':completion:*' preserve-prefix '//[^/]##/'
+  zstyle ':completion:*' prompt '%e possible errors'
+  zstyle ':completion:*' select-prompt '%SScrolling active: current selection at %p%s'
+  zstyle ':completion:*' squeeze-slashes true
+  zstyle ':completion:*' substitute 1
+  zstyle ':completion:*' verbose false
+  zstyle ':completion:*' word true
+  zstyle :compinstall filename "$HOME/.zshrc"
+
+  autoload -Uz compinit colors zcalc
+  compinit -d $XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION
+  colors
+#+end_src
+
+**** Additional options
+Some other settings I like to keep enabled:
+- Command spelling correction (=correct=)
+- Case-insensitive globbing (=nocaseglob=)
+- Smart parameter expansion (=rcexpandparam=)
+- Numeric glob sorting (=numbericglobsort=)
+- Parameter expansion in the prompt (=prompt_subst=)
+#+begin_src sh
+  setopt correct
+  setopt nocaseglob
+  setopt rcexpandparam
+  setopt numericglobsort
+  setopt prompt_subst
+#+end_src
+
+*** History file
+I like keeping a history file, just in case I need to look up a command I ran in the past. It's stored in a place where it keeps XDG compliance. for safe keeping. Append to history instead of overwriting (=appendhistory=), removing all duplicates (=histignorealldups=).
+#+begin_src sh
+  HISTFILE=$XDG_DATA_HOME/zsh/history
+  HISTSIZE=1000
+  SAVEHIST=2000
+  setopt appendhistory
+  setopt histignorealldups
+#+end_src
+
+*** Key bindings
+For some reason, by default ~zsh~ doesn't have keys properly set up. For this reason, I need to define some keys and what they do, and assign Emacs key behavior.
+#+begin_src sh
+  bindkey -e
+  bindkey "\e[1~" beginning-of-line
+  bindkey "\e[4~" end-of-line
+  bindkey "\e[5~" beginning-of-history
+  bindkey "\e[6~" end-of-history
+  bindkey "\e[3~" delete-char
+  bindkey "\e[2~" quoted-insert
+  bindkey "\e[5C" forward-word
+  bindkey "\eOc" emacs-forward-word
+  bindkey "\e[5D" backward-word
+  bindkey "\eOd" emacs-backward-word
+  bindkey "\e[1;5C" forward-word
+  bindkey "\e[1;5D" backward-word
+  bindkey "^H" backward-delete-word
+  # for rxvt
+  bindkey "\e[8~" end-of-line
+  bindkey "\e[7~" beginning-of-line
+  # for non RH/Debian xterm, can't hurt for RH/DEbian xterm
+  bindkey "\eOH" beginning-of-line
+  bindkey "\eOF" end-of-line
+  # for freebsd console
+  bindkey "\e[H" beginning-of-line
+  bindkey "\e[F" end-of-line
+#+end_src
+
+*** Setting the prompt
+It's a dumb fancy-looking prompt. That's about all there is to say about it. What follows afterward is how git status is added to the prompt.
+#+begin_src sh
+  export PS1=$'%(?.%{\033[0;34m%}.\033[0;31m%})┌%{\033[1;32m%}%n%{\033[0;37m%}%b@%{\033[1;31m%}%m%{\033[1;34m%}[%{\033[1;35m%}%c%{\033[1;34m%}]$(git_prompt_string)%{$fg_bold[red]%}%(?..[%b%{$fg[red]%}%?%{$fg_bold[red]%}])\n%(?.%{\033[0;34m%}.%{\033[0;31m%})└%{\033[0m%}%(!.#.$) '
+#+end_src
+
+*** Git status in the prompt
+When managing git repositories, I want extra information in the prompt. I genuinely forget where I found this snippet, but it's of much use.
+
+**** Assigning symbols and colors
+This block assigns, respectively:
+- The symbol to open a block with git information
+- The symbol to close a block with git information
+- The symbol to divide blocks with git information
+- The symbol for the number of commits ahead
+- The symbol for the number of commits behind
+- The symbol for merge conflicts
+- The symbol for untracked files
+- The symbol for modified tracked files
+- The symbol for staged changes present
+#+begin_src sh
+  GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}[%{$reset_color%}"
+  GIT_PROMPT_SUFFIX="%{$fg_bold[blue]%}]%{$reset_color%}"
+  GIT_PROMPT_SYMBOL="%{$fg_bold[blue]%}="
+  GIT_PROMPT_AHEAD="%{$fg[cyan]%}+NUM%{$reset_color%}"
+  GIT_PROMPT_BEHIND="%{$fg[red]%}-NUM%{$reset_color%}"
+  GIT_PROMPT_MERGING="%{$fg_bold[magenta]%}!%{$reset_color%}"
+  GIT_PROMPT_UNTRACKED="%{$fg_bold[red]%}?%{$reset_color%}"
+  GIT_PROMPT_MODIFIED="%{$fg_bold[yellow]%}?%{$reset_color%}"
+  GIT_PROMPT_STAGED="%{$fg_bold[green]%}+%{$reset_color%}"
+#+end_src
+
+**** Parse the current git branch
+Get the current branch or the name-rev if on a detached head.
+#+begin_src sh
+  parse_git_branch() {
+      ( git symbolic-ref -q HEAD || git name-rev --name-only --no-undefined --always HEAD ) 2> /dev/null
+  }
+#+end_src
+
+**** Parse the current git state
+This is where the actual state of the git repository is determined, and returned as a string.
+#+begin_src sh
+  parse_git_state() {
+      # Show different symbols as appropriate for various Git repository states
+      # Compose this value via multiple conditional appends.
+      local GIT_STATE=""
+      local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
+      if [ "$NUM_AHEAD" -gt 0 ]; then
+          GIT_STATE=$GIT_STATE${GIT_PROMPT_AHEAD//NUM/$NUM_AHEAD}
+      fi
+      local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
+      if [ "$NUM_BEHIND" -gt 0 ]; then
+          GIT_STATE=$GIT_STATE${GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
+      fi
+      local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
+      if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
+          GIT_STATE=$GIT_STATE$GIT_PROMPT_MERGING
+      fi
+      if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
+          GIT_STATE=$GIT_STATE$GIT_PROMPT_UNTRACKED
+      fi
+      if ! git diff --quiet 2> /dev/null; then
+          GIT_STATE=$GIT_STATE$GIT_PROMPT_MODIFIED
+      fi
+      if ! git diff --cached --quiet 2> /dev/null; then
+          GIT_STATE=$GIT_STATE$GIT_PROMPT_STAGED
+      fi
+      if [[ -n $GIT_STATE ]]; then
+          echo "$GIT_PROMPT_PREFIX$GIT_STATE$GIT_PROMPT_SUFFIX"
+      fi
+  }
+#+end_src
+
+**** Return a string for the prompt
+Finally, if when writing the prompt a git branch is found, return a string with the git state and git branch.
+#+begin_src sh
+  git_prompt_string() {
+      local git_where="$(parse_git_branch)"
+      [ -n "$git_where" ] && echo "$GIT_PROMPT_SYMBOL$(parse_git_state)$GIT_PROMPT_PREFIX%{$fg[magenta]%}${git_where#(refs/heads/|tags/)}$GIT_PROMPT_SUFFIX"
+  }
+#+end_src
+
+*** When Emacs is the terminal
+There is an Emacs package called ~vterm~ which allows use of Emacs as a fully-featured terminal emulator. There are a number of features which require configuration in the shell.
+#+begin_src sh
+  if [[ $INSIDE_EMACS == "vterm" ]]; then
+#+end_src
+
+**** Push Emacs commands from ~vterm~
+This allows 
+
+**** Clear all scrollback when clearing
+This is why we enable pushing Emacs commands from ~vterm~.
+#+begin_src sh
+  alias clear='vterm_printf "51;Evterm-clear-scrollback";tput clear'
+#+end_src
+
+**** "Alias" ~vim~ into ~emacsclient~
+I can't get over old muscle memory, even after months of using Emacs. Typing ~vim~ in the terminal to edit files is only natural, so I set up a proper function to call ~emacsclient~ when I type ~vim~.
+#+begin_src sh
+  function vim() {
+      [ "$@" ] && {
+          emacsclient $@
+      } || {
+          echo "Please give an argument or filename."
+          return 1
+      }
+  }
+#+end_src
+
+With all this now configured, we can close the if block.
+#+begin_src sh
+  fi
+#+end_src
+
+*** Syntax highlighting in the shell
+It's subtle, but it makes a world of difference in knowing whether I am entering a command properly.
+#+begin_src sh
+  source $XDG_CONFIG_HOME/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+  ZSH_HIGHLIGHT_HIGHLIGHTERS=(main root regexp brackets pattern)
+#+end_src
+
+*** Tangling a literate ~org-mode~ file
+This is necessary for multiple reasons, but most notably so for tangling this specific file. I need to define a few macros and load ~org~ before I can tangle, though. We also skip all confirmation for evaluating. I also set up one for doing things with superuser privileges.
+#+begin_src sh
+  function orgtangle() {
+      [[ ! -n $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
+      emacs --batch \
+            --eval "(require 'org)" \
+            --eval "(setq org-confirm-babel-evaluate nil)" \
+            --eval "(defmacro user-emacs-file (file)
+                      (expand-file-name file user-emacs-directory))" \
+            --eval "(defmacro user-home-file (file)
+                      (expand-file-name file (getenv \"HOME\")))" \
+            --eval "(defmacro user-config-file (file)
+                      (expand-file-name file (getenv \"XDG_CONFIG_HOME\")))" \
+            --eval "(org-babel-tangle-file \"$1\")"
+  }
+
+  function orgtanglesudo() {
+      sudo emacs --batch \
+                 --eval "(require 'org)" \
+                 --eval "(setq org-confirm-babel-evaluate nil)" \
+                 --eval "(defmacro user-emacs-file (file)
+                           (expand-file-name file user-emacs-directory))" \
+                 --eval "(defmacro user-home-file (file)
+                           (expand-file-name file (getenv \"HOME\")))" \
+                 --eval "(defmacro user-config-file (file)
+                           (expand-file-name file (getenv \"XDG_CONFIG_HOME\")))" \
+                 --eval "(org-babel-tangle-file \"$1\")"
+  }
+#+end_src
+
+*** Show a fetch on startup
+This is just a point of personal aesthetic preference. I like having some kind of little display pop up when I start a terminal.
+#+begin_src sh
+  ufetch
+#+end_src
+
+* X session
+** On X startup (~.xinitrc~)
+  :properties:
+  :header-args: :tangle (user-home-file ".xinitrc")
+  :end:
+This file is equally as minimal, as most of the actual configuration is done 
+
+*** X session compliance with XDG Base Directory Specification
+Currently only GTK2 is here, but as I keep on working on it I'll eventually get to a dotfiles setup that has as few configuration files outside of =$XDG_CONFIG_HOME= as possible.
+#+begin_src sh
+  export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
+#+end_src
+
+*** Set an environment variable for the window manager
+Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-startup-3][my Emacs configuration]] I use the environment variable ~_RUN_EXWM~ to signal to Emacs that it should run as my desktop environment.
+#+begin_src sh
+  export _RUN_EXWM=1
+#+end_src
+
+*** Determine monitors to use on my W541
+For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
+#+begin_src sh
+  xrandr | grep eDP1 1> /dev/null 2> /dev/null && {
+      xrandr --output eDP1 --mode 2880x1620 \
+             --output DP2-1 --off \
+             --output DP2-2 --off \
+             --output DP2-3 --off
+  }
+#+end_src
+
+*** Make the background the color of my Emacs background
+This makes Emacs startup look a lot more consistent.
+#+begin_src sh
+  xsetroot -solid "#282a36"
+#+end_src
+
+*** Run the window manager
+In this case, we start Emacs.
+#+begin_src sh
+  exec emacs $_EMACS_DUMP_FILE
+#+end_src
+
+** GTK2 Appearance (~gtkrc~)
+   :properties:
+   :header-args: :tangle (user-config-file "gtk-2.0/gtkrc")
+   :end:
+These settings apply the theme, cursor, and icons I prefer, along with other preferred visual settings. Some size values determined [[#tangling-the-right-size-values][above]].
+#+begin_src conf-unix :noweb yes
+  gtk-theme-name="Ant-Dracula"
+  gtk-icon-theme-name="HighContrast"
+  gtk-font-name="Iosevka <<fontsize()>>"
+  gtk-cursor-theme-name="Bibata_Ice"
+  gtk-cursor-theme-size=<<cursorsize()>>
+  gtk-toolbar-style=GTK_TOOLBAR_BOTH
+  gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
+  gtk-button-images=1
+  gtk-menu-images=1
+  gtk-enable-event-sounds=0
+  gtk-enable-input-feedback-sounds=0
+  gtk-xft-antialias=1
+  gtk-xft-hinting=1
+  gtk-xft-hintstyle="hintfull"
+  gtk-xft-rgba="rgb"
+#+end_src
+
+** GTK3 appearance (~settings.ini~)
+   :properties:
+   :header-args: :tangle (user-config-file "gtk-3.0/settings.ini")
+   :end:
+This is the exact same settings as seen in [[#gtk2-appearance-gtkrc][GTK2's configuration]], but instead for GTK3. This also includes the size values determined [[#tangling-the-right-size-values][above]].
+#+begin_src conf-unix :noweb yes
+  [Settings]
+  gtk-theme-name=Ant-Dracula
+  gtk-icon-theme-name=HighContrast
+  gtk-font-name=Iosevka <<fontsize()>>
+  gtk-cursor-theme-name=Bibata_Ice
+  gtk-cursor-theme-size=<<cursorsize()>>
+  gtk-toolbar-style=GTK_TOOLBAR_BOTH
+  gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
+  gtk-button-images=1
+  gtk-menu-images=1
+  gtk-enable-event-sounds=0
+  gtk-enable-input-feedback-sounds=0
+  gtk-xft-antialias=1
+  gtk-xft-hinting=1
+  gtk-xft-hintstyle=hintfull
+  gtk-xft-rgba=rgb
+#+end_src
+
+* Music player (~mpd.conf~)
+  :properties:
+  :header-args: :tangle (user-config-file "mpd/mpd.conf")
+  :end:
+I use ~mpd~ simply out of ease of use, since it interfaces well with EMMS on Emacs.
+
+*** Setting proper directories
+This section requires absolute paths, which are tangled using ~noweb~ references as defined [[#tangling-absolute-paths][above]].
+- Music and playlists should be in =$HOME/Music=
+- The database, log file, PID file, and state file should all be in =$XDG_CONFIG_HOME/mpd=
+#+begin_src conf-space :noweb yes
+  music_directory "<<HOME()>>/Music"
+  playlist_directory "<<HOME()>>/Music"
+  db_file "<<XDG_CONFIG_HOME()>>/mpd/mpd.db"
+  log_file "<<XDG_CONFIG_HOME()>>/mpd/mpd.log"
+  pid_file "<<XDG_CONFIG_HOME()>>/mpd/mpd.pid"
+  state_file "<<XDG_CONFIG_HOME()>>/mpd/mpdstate"
+#+end_src
+
+*** Setting the output interface
+I want to use my speakers for this.
+#+begin_src conf-space
+  audio_output {
+          type "pulse"
+          name "pulse audio"
+  }
+#+end_src
+
+*** Use the right address and port
+This is a local instance
+#+begin_src conf-space
+  bind_to_address "127.0.0.1"
+  port "6601"
+#+end_src
+

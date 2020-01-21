@@ -1,0 +1,9 @@
+[submodule "zsh/zsh-syntax-highlighting"]
+	path = zsh/zsh-syntax-highlighting
+	url = https://github.com/zsh-users/zsh-syntax-highlighting
+[submodule "emacs"]
+	path = emacs
+	url = https://github.com/farlado/dotemacs
+[submodule "deploy/yay"]
+	path = deploy/yay
+	url = https://aur.archlinux.com/yay

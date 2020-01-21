@@ -1,0 +1,364 @@
+#+title: Farlado's Illiterate System Configuration
+#+startup: hideblocks
+
+* Table of Contents :toc:quote:
+#+BEGIN_QUOTE
+- [[#about-this-configuration][About this Configuration]]
+- [[#making-the-proper-paths][Making the proper paths]]
+- [[#block-tracking-and-ads-hosts][Block tracking and ads (~hosts~)]]
+- [[#fan-management-thinkfanconf][Fan management (~thinkfan.conf~)]]
+- [[#power-management-tlp][Power management (~tlp~)]]
+- [[#x11-20-intelconf][X11 (~20-intel.conf~)]]
+- [[#package-management][Package management]]
+  - [[#configuring-pacman-pacmanconf][Configuring ~pacman~ (~pacman.conf~)]]
+  - [[#systemd-hook-100-systemd-boothook][Systemd hook (~100-systemd-boot.hook~)]]
+- [[#linux-boot-image][Linux boot image]]
+- [[#boot-settings][Boot settings]]
+  - [[#silent-boot-part-1-systemd-fsckservice][Silent boot, part 1 (~systemd-fsck@.service~)]]
+  - [[#silent-boot-part-2-systemd-fsck-rootservice][Silent boot, part 2 (~systemd-fsck-root.service~)]]
+  - [[#login-management-logindconf][Login management (~logind.conf~)]]
+#+END_QUOTE
+
+* About this Configuration
+Inspired by my [[https://github.com/farlado/dotemacs][Emacs configuration]], I decided to take it another step further: /literate system configuration files/. This seemed like a good idea until I put my hosts file in, but even then since the hosts file is the first items, it does not affect any other part of this configuration.
+
+* Making the proper paths
+In order for tangling to work, the proper paths have to be present. This is done with a hidden block that tangles to a temporary file out in the middle of nowhere. This file needs super-user privileges to tangle. This is fine if you're editing it in Emacs by means of Tramp, though. Just keep that in mind if trying to tangle from anywhere but the pdeploy script this file tangles here.
+#+name: mkdir
+#+begin_src emacs-lisp :tangle no
+  (let* ((default-directory "/sudo::/etc"))
+    (dolist (directory '("X11/xorg.conf.d"
+                         "systemd/system"
+                         "pacman.d/hooks"
+                         "libreoffice"
+                         "default"
+                         "X11"))
+      (make-directory directory t)))
+#+end_src
+#+begin_src text :tangle /tmp/sys :noweb yes :exports no
+  <<mkdir()>>
+#+end_src
+
+* Block tracking and ads (~hosts~)
+This file was /way too huge/ for Emacs to handle inside of ~org-mode~. It's copied from elsewhere.
+#+name: cphosts
+#+begin_src emacs-lisp
+  (let ((default-directory "/sudo::/etc"))
+    (shell-command (concat "cp " (user-config-file "deploy/hosts") " hosts")))
+#+end_src
+
+* Fan management (~thinkfan.conf~)
+  :properties:
+  :header-args: :tangle "/sudo::/etc/thinkfan.conf"
+  :end:
+Since I use ThinkPads, I have a general configuration for their fans by means of ~thinkfan~. There are eight fan levels, labeled =0= through =7=. The lower number of the range is when it steps down to a lower level, and the upper number is when it steps up to a higher level.
+- 0°C - 60°C: Level 0 (Fan off)
+- 55°C - 62°C: Level 1
+- 56°C - 64°C: Level 2
+- 57°C - 66°C: Level 3
+- 61°C - 68°C: Level 4
+- 64°C - 70°C: Level 5
+- 66°C - 72°C: Level 6
+- 68°C - MAX: Level 7 (Max speed)
+#+begin_src text
+  tp_fan /proc/acpi/ibm/fan
+  tp_thermal /proc/acpi/ibm/thermal
+
+  (0, 0,  58)
+  (1, 56, 60)
+  (2, 58, 62)
+  (3, 60, 64)
+  (4, 62, 66)
+  (5, 64, 68)
+  (6, 66, 70)
+  (7, 68, 32767)
+#+end_src
+
+* Power management (~tlp~)
+  :properties:
+  :header-args: :tangle "/sudo::/etc/default/tlp"
+  :end:
+To manage power settings on my laptops, I use ~tlp.~
+
+*** Default mode
+Default to behavior while on AC power if no power supply is found. However, if a power supply is found, use the mode for that power state rather than the default.
+#+begin_src conf-unix
+  TLP_ENABLE=1
+  TLP_DEFAULT_MODE=AC
+  TLP_PERSISTENT_DEFAULT=0
+#+end_src
+
+*** CPU
+While on battery, focus on power saving in profiles, and 
+- While on battery: Balanced, focus on power saving, reduce power on low load
+- While plugged in: Balanced, focus on performance, don't reduce power on low load
+#+begin_src conf-unix
+  ENERGY_PERF_POLICY_ON_BAT=balance-power
+  ENERGY_PERF_POLICY_ON_AC=balance-performance
+
+  CPU_HWP_ON_BAT=balance_power
+  CPU_HWP_ON_AC=balance_performance
+
+  SCHED_POWERSAVE_ON_BAT=1
+  SCHED_POWERSAVE_ON_AC=0
+#+end_src
+
+*** PCI(e)
+- While on battery: Runtime Power Management Enabled
+- While plugged in: Runtime Power Management Disabled
+#+begin_src conf-unix
+  RUNTIME_PM_ON_AC=on
+  RUNTIME_PM_ON_BAT=auto
+#+end_src
+
+*** HDD/SSD
+The device label from the kernel for both the SSD in my W541 and the SSD in my X230 is =sda=. Therefore, there is no need to use their IDs. The goal is to always use DPIM, but if that is not possible, use the maximum power saving while on battery, and the maximum performance setting while plugged in. Advanced power management should be at half power while on battery, and at full power when plugged in.
+#+begin_src conf-unix
+  DISK_DEVICES="sda"
+
+  SATA_LINKPWR_ON_BAT="med_power_with_dipm min_power"
+  SATA_LINKPWR_ON_AC="med_power_with_dipm max_performance"
+
+  DISK_APM_LEVEL_ON_BAT="128"
+  DISK_APM_LEVEL_ON_AC="254"
+#+end_src
+
+*** USB
+Automatic suspension of USB devices is enabled. However, exceptions exist:
+- For printers
+- On shutdown
+#+begin_src conf-unix
+  USB_AUTOSUSPEND=1
+
+  USB_BLACKLIST_BTUSB=0
+  USB_BLACKLIST_PHONE=0
+  USB_BLACKLIST_PRINTER=1
+  USB_BLACKLIST_WWAN=0
+
+  USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN=1
+  RESTORE_DEVICE_STATE_ON_STARTUP=0
+#+end_src
+
+*** Network
+- Don't wake on LAN
+- Enable WiFi power saving while on battery
+- On startup, enable WiFi
+- On shutdown, disable both Bluetooth and WiFi
+- Disable WiFi temporarily when LAN is connected
+#+begin_src conf-unix
+  WOL_DISABLE=Y
+
+  WIFI_PWR_ON_BAT=on
+  WIFI_PWR_ON_AC=off
+
+  DEVICES_TO_ENABLE_ON_STARTUP="wifi"
+  DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi"
+
+  DEVICES_TO_DISABLE_ON_LAN_CONNECT="wifi"
+  DEVICES_TO_ENABLE_ON_LAN_DISCONNECT="wifi"
+#+end_src
+
+*** Battery/Charging
+This block enables ACPI features for battery and power management. Also included are thresholds used to determine when to start and stop charging. ThinkPads need these values set when using ~tlp~.
+#+begin_src conf-unix
+  NATACPI_ENABLE=1
+  TPACPI_ENABLE=1
+  TPSMAPI_ENABLE=1
+
+  START_CHARGE_THRESH_BAT0=67
+  STOP_CHARGE_THRESH_BAT0=100
+#+end_src
+* X11 (~20-intel.conf~)
+  :properties:
+  :header-args: :tangle "/sudo::/etc/X11/xorg.conf.d/20-intel.conf"
+  :end:
+I hate screen tearing, so this is to end that.
+#+begin_src conf-space
+  Section "Device"
+          Identifier "Intel Graphics"
+          Driver "intel"
+          Option "TearFree" "true"
+  EndSection
+#+end_src
+
+* Package management
+** Configuring ~pacman~ (~pacman.conf~)
+   :properties:
+   :header-args: :tangle "/sudo::/etc/pacman.conf"
+   :end:
+Since I use Arch, ~pacman~ is the package manager in use.
+
+*** General options
+- Don't allow the removal of ~pacman~ or ~glibc~
+- Automatically determine the system architecture
+- Outputs should be in color
+- Show the percentage for the total download
+- Check for space before installing
+#+begin_src conf-unix
+  [options]
+  HoldPkg = pacman glibc
+  Architecture = auto
+  TotalDownload
+  CheckSpace
+  Color
+#+end_src
+
+*** Repositories
+I only use repositories already defined in the mirrors provided by Arch maintainers, so this section is not particularly special.
+#+begin_src conf-unix
+  [core]
+  Include = /etc/pacman.d/mirrorlist
+
+  [extra]
+  Include = /etc/pacman.d/mirrorlist
+
+  [community]
+  Include = /etc/pacman.d/mirrorlist
+
+  [multilib]
+  Include = /etc/pacman.d/mirrorlist
+#+end_src
+
+** Systemd hook (~100-systemd-boot.hook~)
+   :properties:
+   :header-args: :tangle "/sudo::/etc/pacman.d/hooks/100-systemd-boot.hook"
+   :end:
+*** What triggers it
+When ~systemd~ is updated, run this hook.
+#+begin_src conf-unix
+  [Trigger]
+  Type = Package
+  Operation = Upgrade
+  Target = systemd
+#+end_src
+
+*** What it does when triggered
+Reload ~systemd-boot~ in =/boot=.
+#+begin_src conf-unix
+  [Action]
+  Description = Updating systemd-boot
+  When = PostTransaction
+  Exec = /usr/bin/bootctl update
+#+end_src
+
+* Linux boot image
+   :properties:
+   :header-args: :tangle "/sudo::/etc/mkinitcpio.conf"
+   :end:
+Arch's ~mkinitcpio~ makes this so easy to do. Just pick modules, pick hooks, and pick a form of compression for the image and off it goes!
+
+*** Modules
+These are modules to load on boot. I only ensure the display driver is loaded.
+#+begin_src conf-unix
+  MODULES=(i915)
+#+end_src
+
+*** Binaries
+I don't load any, but I put it here for completeness.
+#+begin_src conf-unix
+  BINARIES=()
+#+end_src
+
+*** Files
+Also not used, but left in for completeness
+#+begin_src conf-unix
+  FILES=()
+#+end_src
+
+*** Hooks
+This is the real deal, this is where everything is actually loaded.
+#+begin_src conf-unix
+  HOOKS=(base
+         systemd
+         autodetect
+         modconf
+         block
+         filesystems
+         keyboard
+         fsck
+         shutdown)
+#+end_src
+* Boot settings
+Unfortunately, boot loader settings cannot be copied from tangling, due to how =/boot= works. However, other files tangle perfectly fine.
+
+** Silent boot, part 1 (~systemd-fsck@.service~)
+   :properties:
+   :header-args: :tangle "/sudo::/etc/systemd/system/systemd-fsck@.service"
+   :end:
+I don't like having a bunch of boot messages show up. Having ~systemd~ do ~fsck~ makes this possible.
+
+*** Unit description
+#+begin_src conf-unix
+  [Unit]
+  Description=File System Check on %f
+  Documentation=man:systemd-fsck@.service(8)
+  DefaultDependencies=no
+  BindsTo=%i.device
+  Conflicts=shutdown.target
+  After=%i.device systemd-fsck-root.service local-fs-pre.target
+  Before=systemd-quotacheck.service shutdown.target
+#+end_src
+
+*** Service description
+#+begin_src conf-unix
+  [Service]
+  Type=oneshot
+  RemainAfterExit=yes
+  ExecStart=/usr/lib/systemd/systemd-fsck %f
+  StandardOutput=null
+  StandardError=journal+console
+  TimeoutSec=0
+#+end_src
+
+** Silent boot, part 2 (~systemd-fsck-root.service~)
+   :properties:
+   :header-args: :tangle "/sudo::/etc/systemd/system/systemd-fsck-root.service"
+   :end:
+There are two portions to having ~systemd~ do fsck, because there's a separate service for ~fsck~-ing root.
+
+*** Unit description
+#+begin_src conf-unix
+  [Unit]
+  Description=File System Check on Root Device
+  Documentation=man:systemd-fsck-root.service(8)
+  DefaultDependencies=no
+  Conflicts=shutdown.target
+  Before=local-fs.target shutdown.target
+  ConditionPathIsReadWrite=!/
+#+end_src
+
+*** Service description
+#+begin_src conf-unix
+  [Service]
+  Type=oneshot
+  RemainAfterExit=yes
+  ExecStart=/usr/lib/systemd/systemd-fsck
+  StandardOutput=null
+  StandardError=journal+console
+  TimeoutSec=0
+#+end_src
+
+** Login management (~logind.conf~)
+   :properties:
+   :header-args: :tangle "/sudo::/etc/systemd/logind.conf"
+   :end:
+I have touched some of it, and haven't touched other parts. Only changes from the defaults are really noted in here.
+#+begin_src conf-unix
+  [Login]
+#+end_src
+
+*** Only two ~tty~ terminals
+I only need two: one for loading an X window session and one for loading one that isn't an X window session.
+#+begin_src conf-unix
+  NAutoVTs=3
+  ReserveVT=3
+#+end_src
+
+*** Don't suspend on laptop close
+This was an annoyance previously, especially when docked.
+#+begin_src conf-unix
+  HandleLidSwitch=ignore
+  HandleLidSwitchExternalPower=ignore
+  HandleLidSwitchDocked=ignore
+#+end_src
+
