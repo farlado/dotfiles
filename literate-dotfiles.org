@@ -472,6 +472,12 @@ Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-st
   export _RUN_EXWM=1
 #+end_src
 
+*** Uniformity between Qt and GTK applications
+This annoyed me. Thankfully there's a fix to it.
+#+begin_src sh
+  export QT_QPA_PLATFORMTHEME=gtk2
+#+end_src
+
 *** Determine monitors to use on my W541
 For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
 #+begin_src sh

@@ -1,5 +1,8 @@
 #+title: Farlado's Illiterate System Configuration
-#+startup: hideblocks
+#+subtitle: A far-from-sane literate system configuration
+#+author: Farlado
+#+language: en
+#+options: num:nil toc:1
 
 * Table of Contents :toc:quote:
 #+BEGIN_QUOTE
@@ -350,8 +353,8 @@ I have touched some of it, and haven't touched other parts. Only changes from th
 *** Only two ~tty~ terminals
 I only need two: one for loading an X window session and one for loading one that isn't an X window session.
 #+begin_src conf-unix
-  NAutoVTs=3
-  ReserveVT=3
+  NAutoVTs=2
+  ReserveVT=2
 #+end_src
 
 *** Don't suspend on laptop close
