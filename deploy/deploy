@@ -21,22 +21,18 @@ git submodule sync
 git submodule update --init --checkout --recursive
 git config --local status.showUntrackedFiles no
 
-echo Installing Emacs first...
-cd $XDG_CONFIG_HOME/deploy/emacs
-makepkg -si --noconfirm
-rm -rf pkg src emacs*
-
-echo Installing yay...
-cd $XDG_CONFIG_HOME/deploy/yay
-makepkg -si --noconfirm
-rm -rf pkg src yay*
+for pkg in emacs-git yay; do
+    if ! pacman -Q | grep $pkg; then
+        echo Installing $pkg...
+        cd $XDG_CONFIG_HOME/deploy/$pkg
+        makepkg -si --noconfirm
+        rm -rf pkg src $pkg*
+    fi
+done
 
 echo Tangling system files...
 cd $XDG_CONFIG_HOME
-emacs --batch \
-      --eval "(require 'org)" \
-      --eval '(org-babel-tangle-file "literate-sysconfig.org")' \
-      2> /dev/stdout | tail -n 1
+emacs --eval '(progn (org-babel-tangle-file "literate-sysconfig.org") (kill-emacs))'
 
 echo Installing packages...
 # If this is a ThinkPad, we need to set up the fan control software
@@ -80,17 +76,7 @@ chsh -s /bin/zsh $USER
 
 echo Tangling dotfiles...
 cd $XDG_CONFIG_HOME
-emacs --batch \
-      --eval "(require 'org)" \
-      --eval "(setq org-confirm-babel-evaluate nil)" \
-      --eval "(defmacro user-emacs-file (file)
-                (expand-file-name file user-emacs-directory))" \
-      --eval "(defmacro user-home-file (file)
-                (expand-file-name file (getenv \"HOME\")))" \
-      --eval "(defmacro user-config-file (file)
-                (expand-file-name file (getenv \"XDG_CONFIG_HOME\")))" \
-      --eval '(org-babel-tangle-file "literate-dotfiles.org")' \
-      2> /dev/stdout | tail -n 1
+emacs --eval '(progn (org-babel-tangle-file "literate-dotfiles.org") (kill-emacs))'
 
 echo Generating dump image for Emacs...
 emacs --batch -q -l $XDG_CONFIG_HOME/emacs/lisp/pdumper.el

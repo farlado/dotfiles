@@ -6,4 +6,4 @@
 	url = https://github.com/farlado/dotemacs
 [submodule "deploy/yay"]
 	path = deploy/yay
-	url = https://aur.archlinux.com/yay
+	url = https://aur.archlinux.org/yay
