@@ -557,7 +557,7 @@ Since ~twm~ doesn't come with a clock, I need to grab one for myself and it's st
 #+begin_src sh
   xclock -digital -strftime '%a %d %b | %H:%M:%S' \
          -face 'Gohu GohuFont' -update 1 -padding 2 \
-         -bg "#282a36" -fg "#ffffff" -geometry 171x17-0+0 &
+         -bg "#44475a" -fg "#ffffff" -geometry 171x17-0+0 &
 #+end_src
 
 *** Fix the cursor
