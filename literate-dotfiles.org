@@ -527,7 +527,7 @@ This annoyed me. Thankfully there's a fix to it.
 For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
 #+begin_src sh
   xrandr | grep eDP1 1> /dev/null 2> /dev/null && {
-      xrandr --output eDP1 --mode 1920x1080 \
+      xrandr --output eDP1 --mode 2880x1620 \
              --output DP2-1 --off \
              --output DP2-2 --off \
              --output DP2-3 --off
@@ -629,7 +629,7 @@ Movement-based actions are defined here.
 - Repaint instead of saving window state.
 - Don't raise on resize/move/deiconify.
 - Accept window size hints.
-- Don't do relative resize from any region.
+- Allow relative resize from all regions.
 #+begin_src conf-space
   OpaqueMove
   OpaqueResize
@@ -637,6 +637,7 @@ Movement-based actions are defined here.
   NoRaiseOnMove
   NoRaiseOnResize
   NoRaiseOnDeiconify
+  AutoRelativeResize
   UsePPosition "on"
 #+end_src
 
