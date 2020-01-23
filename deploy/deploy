@@ -14,8 +14,7 @@ isThinkPad="$(grep ThinkPad /sys/devices/virtual/dmi/id/product_version)"
 echo Updating repositories and installing git...
 sudo pacman --needed -Syu git
 
-echo Cloning and configuring the dotfiles repository and submodules...
-git clone https://github.com/farlado/dotfiles $XDG_CONFIG_HOME
+echo Configuring the dotfiles repository and submodules...
 cd $XDG_CONFIG_HOME
 git submodule sync
 git submodule update --init --checkout --recursive
