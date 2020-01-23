@@ -20,7 +20,9 @@
   - [[#quiet-login-hushlogin][Quiet login (~.hushlogin~)]]
   - [[#configuration-zshrc][Configuration (~.zshrc~)]]
 - [[#x-session][X session]]
-  - [[#on-x-startup-xinitrc][On X startup (~.xinitrc~)]]
+  - [[#starting-exwm-xinitrc-emacs][Starting ~EXWM~ (~xinitrc-emacs~)]]
+  - [[#starting-twm-xinitrc-twm][Starting ~twm~ (~xinitrc-twm~)]]
+  - [[#configuring-twm-twmrc][Configuring ~twm~ (~twmrc~)]]
   - [[#gtk2-appearance-gtkrc][GTK2 Appearance (~gtkrc~)]]
   - [[#gtk3-appearance-settingsini][GTK3 appearance (~settings.ini~)]]
 - [[#music-player-mpdconf][Music player (~mpd.conf~)]]
@@ -77,6 +79,7 @@ In order for tangling to work, the proper paths have to be present. This is done
 #+begin_src emacs-lisp
   (dolist (directory '(".cache/zsh"
                        ".config/mpd"
+                       ".config/X11"
                        ".config/gtk-2.0"
                        ".config/gtk-3.0"
                        ".local/share/zsh"))
@@ -152,13 +155,12 @@ The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my b
 #+end_src
 
 *** Login behavior
-- On =tty1=, start an X window session.
-- On =tty2=, start Emacs in the =tty=
-- On any other =tty=, start normally.
+- On =tty1=, start [[#starting-exwm-xinitrc-emacs][EXWM]].
+- On =tty2=, start [[#starting-twm-xinitrc-twm][twm]].
 #+begin_src sh
   case $(tty | sed 's/\/dev\/tty//') in
-      1) exec startx &> /dev/null;;
-      2) exec emacs $_EMACS_DUMP_FILE;;
+      1) exec startx $XDG_CONFIG_HOME/X11/xinitrc-emacs &> /dev/null;;
+      2) exec startx $XDG_CONFIG_HOME/X11/xinitrc-twm;;
   esac
 #+end_src
 
@@ -454,15 +456,16 @@ This is just a point of personal aesthetic preference. I like having some kind o
 #+end_src
 
 * X session
-** On X startup (~.xinitrc~)
+** Starting ~EXWM~ (~xinitrc-emacs~)
   :properties:
-  :header-args: :tangle (user-home-file ".xinitrc")
+  :header-args: :tangle (user-config-file "X11/xinitrc-emacs")
   :end:
 This file is equally as minimal, as most of the actual configuration is done 
 
 *** X session compliance with XDG Base Directory Specification
 Currently only GTK2 is here, but as I keep on working on it I'll eventually get to a dotfiles setup that has as few configuration files outside of =$XDG_CONFIG_HOME= as possible.
 #+begin_src sh
+  export XDG_CURRENT_DESKTOP="emacs"
   export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 #+end_src
 
@@ -499,6 +502,332 @@ This makes Emacs startup look a lot more consistent.
 In this case, we start Emacs.
 #+begin_src sh
   exec emacs $_EMACS_DUMP_FILE
+#+end_src
+
+** Starting ~twm~ (~xinitrc-twm~)
+   :properties:
+   :header-args: :tangle (user-config-file "X11/xinitrc-twm")
+   :end:
+This is just for funsies. I like ~twm~ even though I'll never truly be able to "live" in it.
+
+*** X session compliance with XDG Base Directory Specification
+Currently only GTK2 is here, but as I keep on working on it I'll eventually get to a dotfiles setup that has as few configuration files outside of =$XDG_CONFIG_HOME= as possible.
+#+begin_src sh
+  export WM="twm"
+  export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
+#+end_src
+
+*** Uniformity between Qt and GTK applications
+This annoyed me. Thankfully there's a fix to it.
+#+begin_src sh
+  export QT_QPA_PLATFORMTHEME=gtk2
+#+end_src
+
+*** Set monitors to use on my W541
+For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
+#+begin_src sh
+  xrandr | grep eDP1 1> /dev/null 2> /dev/null && {
+      xrandr --output eDP1 --mode 1920x1080 \
+             --output DP2-1 --off \
+             --output DP2-2 --off \
+             --output DP2-3 --off
+  }
+#+end_src
+
+*** Disable the trackpad
+I don't really use the trackpad, so there's no point in keeping it enabled.
+#+begin_src sh
+  xinput disable $(xinput | grep Synap | head -n 1 | sed -r 's/.*id=([0-9]+).*/\1/')
+#+end_src
+
+*** Start a compositor
+I don't need it for too much, it just makes things a little nicer.
+#+begin_src sh
+  xcompmgr -f -D 3 &
+#+end_src
+
+*** Make =CAPS= do =CTRL=
+I /hate/ caps lock. I have no use for it.
+#+begin_src sh
+  setxkbmap -option ctrl:nocaps
+#+end_src
+
+*** Start up a clock
+Since ~twm~ doesn't come with a clock, I need to grab one for myself and it's started here, placed right above my icon manager. Incidentally, this makes the top right corner bear some resemblance to the BeOS Tracker.
+#+begin_src sh
+  xclock -digital -strftime '%a %d %b | %H:%M:%S' \
+         -face 'Gohu GohuFont' -update 1 -padding 2 \
+         -bg "#282a36" -fg "#ffffff" -geometry 171x17-0+0 &
+#+end_src
+
+*** Fix the cursor
+An annoyance that it doesn't look correct right away...
+#+begin_src sh
+  xsetroot -cursor_name left_ptr
+#+end_src
+
+*** Set wallpaper
+I'm not entirely tacky.
+#+begin_src sh
+  if [ -f $XDG_CONFIG_HOME/.wallpaper.png ]; then
+      feh --no-fehbg --bg-fill $XDG_CONFIG_HOME/.wallpaper.png
+  fi
+#+end_src
+
+*** Start ~twm~
+#+begin_src sh
+  exec twm -f $XDG_CONFIG_HOME/X11/twmrc
+#+end_src
+
+** Configuring ~twm~ (~twmrc~)
+   :properties:
+   :header-args: :tangle (user-config-file "X11/twmrc")
+   :end:
+I decided for funsies to start my own ~twm~ configuration. Honestly I kinda like this window manager...
+
+*** Font
+The default font looks okay, but.......
+#+begin_src conf-space :noweb yes
+  MenuFont "*gohu*14*"
+  IconFont "*gohu*14*"
+  TitleFont "*gohu*14*"
+  ResizeFont "*gohu*14*"
+  IconManagerFont "*gohu*14*"
+#+end_src
+
+*** System
+**** Settings
+- Don't use defaults
+- Don't grab the server on menus
+- Decorate "transient" windows
+- Ignore extraneous events
+#+begin_src conf-space
+  NoDefaults
+  NoGrabServer
+  DecorateTransients
+  DefaultFunction f.nop
+#+end_src
+
+**** Functions
+Movement-based actions are defined here.
+- Immediately allow movement of a window.
+- Give the chance to lower/raise/iconify when moving/resizing.
+- Deiconify and raise.
+#+begin_src conf-space
+  MoveDelta 1
+  Function "move-or-lower"       { f.move f.deltastop f.lower }
+  Function "resize-or-lower"     { f.resize f.deltastop f.lower }
+  Function "move-or-raise"       { f.move f.deltastop f.raise }
+  Function "move-or-iconify"     { f.move f.deltastop f.iconify }
+  Function "deiconify-and-raise" { f.deiconify f.raise }
+  Function "force-iconify"       { f.deiconify f.iconify }
+#+end_src
+
+*** Windows
+**** General
+- Move/resize windows, not just outlines.
+- Repaint instead of saving window state.
+- Don't raise on resize/move/deiconify.
+- Accept window size hints.
+- Don't do relative resize from any region.
+#+begin_src conf-space
+  OpaqueMove
+  OpaqueResize
+  NoSaveUnders
+  NoRaiseOnMove
+  NoRaiseOnResize
+  NoRaiseOnDeiconify
+  UsePPosition "on"
+#+end_src
+
+**** Title bars
+For some reason, the default ~twm~ title bars are configured in a way that is an /ABSOLUTE EYESORE/. A little bit of the BeOS aesthetic fixes this up right away.
+#+begin_src conf-space
+  NoTitleHighlight
+  NoHighlight
+  SqueezeTitle
+#+end_src
+
+**** Title buttons
+I personally like having a close button, a maximize button, and a minimize button on every window. Why wouldn't you include those? On the right side is a menu. I don't want them to be smaller, and I don't want them to have borders.
+#+begin_src conf-space
+  IconDirectory "~/.config/X11/bitmaps"
+
+  LeftTitleButton "close.xbm" = f.delete
+  LeftTitleButton "maximize.xbm" = f.fullzoom
+  LeftTitleButton "minimize.xbm" = f.iconify
+  RightTitleButton "menu12" = f.menu "windowmenu"
+  ButtonIndent 0
+  TitleButtonBorderWidth 0
+#+end_src
+
+**** Border settings
+These make borders marginally better to look at. We also remove shadows from menus here.
+#+begin_src conf-space
+  BorderWidth 3
+  FramePadding 1
+  TitlePadding 3
+  MenuBorderWidth 2
+#+end_src
+
+**** Windows without a title
+These windows should not have a title.
+#+begin_src conf-space
+  NoTitle {
+      "TWM Icon Manager"
+      "xclock"
+  }
+#+end_src
+
+*** Icon Manager
+Icons are the way windows minimize. There is also an icon manager, which is configured in this section. The icon manager should be present at startup, living in the top right corner of my screen. Icons themselves shouldn't show up, rather windows should be minimized fully. The clock next to it should never show up, and the icon manager itself should automatically rise when it's focused.
+#+begin_src conf-space
+  ShowIconManager
+  SortIconManager
+  NoCaseSensitive
+  IconifyByUnmapping
+  IconManagerGeometry "=171x10-0+20" 1
+  IconManagerDontShow { "xclock" "TWM Icon Manager" }
+  AutoRaise { "TWM Icon Manager" }
+#+end_src
+
+*** Key bindings
+- =F11= = Fullscreen toggle
+- =Alt= + =Tab= = Warp to Icon Manager
+#+begin_src conf-space
+  "F11" =   : all : f.fullzoom
+  "Tab" = m : all : f.warpto "TWM Icon Manager"
+#+end_src
+
+*** Mouse bindings
+**** On the icon manager
+- =Button1= = =deiconify-and-raise=
+- =Button2= = Toggle iconify
+- =Button3= = =force-iconify=
+#+begin_src conf-space
+  Button1 = : iconmgr : f.function "deiconify-and-raise"
+  Button2 = : iconmgr : f.iconify
+  Button3 = : iconmgr : f.function "force-iconify"
+#+end_src
+
+**** On the root window
+- =Button1= = =twmops= menu
+#+begin_src conf-space
+  Button1 = : root : f.menu "twmops"
+#+end_src
+
+**** On the titlebar
+- =Button1= = =move-or-raise=
+- =Button2= = =move-or-iconify=
+- =Button3= = =move-or-lower=
+#+begin_src conf-space
+  Button1 = : title | icon : f.function "move-or-raise"
+  Button2 = : title | icon : f.function "move-or-iconify"
+  Button3 = : title | icon : f.function "move-or-lower"
+#+end_src
+
+**** On a window
+- =Button1= + =Alt= = =move-or-raise=
+- =Button2= + =Alt= = =move-or-iconify=
+- =Button3= + =Alt= = =resize-or-lower=
+#+begin_src conf-space
+  Button1 = m : window | icon : f.function "move-or-raise"
+  Button2 = m : window | icon : f.function "move-or-iconify"
+  Button3 = m : window | icon : f.function "resize-or-lower"
+#+end_src
+
+*** Menu setup
+Since ~twm~ seems to rely quite a bit on the mouse, of course it involves menus.
+
+**** =twmops=
+This menu is mainly supposed to concern things specifically related to ~twm~ or launching windows. Exiting is put in its own sub-menu.
+#+begin_src conf-space
+  menu "twmops" {
+      "twm" f.title
+      "Run..." !"rofi -show run &"
+      "" f.nop
+      "Discord"  !"discord &"
+      "Emacs"    !"emacsclient -c || emacs $_EMACS_DUMP_FILE &"
+      "Firefox"  !"firefox --new-window &"
+      "Steam"    !"steam &"
+      "Telegram" !"telegram-desktop &"
+      "Terminal" !"emacsclient -c --eval '(vterm)' || emacs $_EMACS_DUMP_FILE --eval '(vterm)' &"
+      "" f.nop
+      "Restart twm" f.restart
+      "Quit"        f.menu "quit"
+  }
+
+  menu "quit" {
+      "Log out"   f.quit
+      "Sleep"     !"systemctl suspend -i &"
+      "Reboot"    !"restart"
+      "Shut down" !"shutdown now"
+  }
+#+end_src
+
+**** =windowmenu=
+This is the menu on every window.
+#+begin_src conf-space
+  menu "windowmenu" {
+      "Iconify" f.iconify
+      "Raise"   f.raise
+      "Lower"   f.lower
+      "Focus"   f.focus
+      "" f.nop
+      "Close" f.delete
+      "Kill"  f.destroy
+  }
+#+end_src
+
+*** Colors
+Out of the box, ~twm~ is /ugly/. I don't want it to stay that way. I like that I am free to give it colors as I will, giving me the ability to provide consistency between my ~twm~ colors and the colors I give Emacs and GTK applications.
+#+begin_src conf-space
+  Color {
+#+end_src
+
+**** Default
+This is the default colors for blank windows (or maybe the desktop itself, I really don't know).
+#+begin_src conf-space
+  DefaultBackground "#282a36"
+  DefaultForeground "#FFFFFF"
+#+end_src
+
+**** Borders
+For the border, I use the same color as the Emacs mode line color used in Dracula.
+#+begin_src conf-space
+  BorderColor "#44475a"
+#+end_src
+
+**** Titles
+The same color is used for the title bars as for the borders.
+#+begin_src conf-space
+  TitleBackground "#44475a"
+  TitleForeground "#ffffff"
+#+end_src
+
+**** Menus
+Menus share many of the same colors as other elements.
+#+begin_src conf-space
+  MenuBorderColor "#44475a"
+  MenuShadowColor "#44475a"
+
+  MenuTitleBackground "#44475a"
+  MenuTitleForeground "#ffffff"
+
+  MenuBackground "#282a36"
+  MenuForeground "#ffffff"
+#+end_src
+
+**** Icon Manager
+The final section, for the icon manager. It'll all look very familiar.
+#+begin_src conf-space
+  IconManagerBackground "#282a36"
+  IconManagerForeground "#ffffff"
+#+end_src
+
+The block can be closed off here.
+#+begin_src conf-space
+  }
 #+end_src
 
 ** GTK2 Appearance (~gtkrc~)

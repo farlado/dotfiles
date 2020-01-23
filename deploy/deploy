@@ -30,10 +30,6 @@ for pkg in emacs-git yay; do
     fi
 done
 
-echo Tangling system files...
-cd $XDG_CONFIG_HOME
-emacs --eval '(progn (org-babel-tangle-file "literate-sysconfig.org") (kill-emacs))'
-
 echo Installing packages...
 # If this is a ThinkPad, we need to set up the fan control software
 [ "$isThinkPad" ] && {
@@ -42,10 +38,10 @@ echo Installing packages...
 audio="pulseaudio pulseaudio-bluetooth pulseaudio-alsa alsa-utils"
 net="bluez bluez-utils networkmanager curl wget"
 emacs="ghostscript aspell aspell-en texlive-most"
-wm="xorg xorg-xinit xorg-drivers xbanish xcompmgr arandr nm-connection-editor"
+wm="xorg xorg-xinit xorg-drivers xorg-twm xorg-xclock xbanish xcompmgr arandr nm-connection-editor"
 de="brightnessctl maim xclip i3lock-color"
 looks="bibata-cursor-theme ant-dracula-gtk-theme gnome-themes-extra ttf-iosevka lxappearance-gtk3"
-fonts="ttf-opensans ttf-ubuntu-font-family ttf-liberation ttf-dejavu noto-fonts noto-fonts-extra noto-fonts-emoji otf-ipafont wqy-microhei wqy-zenhei"
+fonts="ttf-opensans ttf-ubuntu-font-family ttf-liberation ttf-dejavu noto-fonts noto-fonts-extra noto-fonts-emoji otf-ipafont wqy-microhei wqy-zenhei gohufont"
 apps="firefox libreoffice-fresh musescore gimp telegram-desktop-bin discord mpv transmission-gtk musescore"
 games="vulkan-intel mesa steam xonotic"
 dev="python python-pylint python-jedi hy stack sbcl"
