@@ -14,7 +14,6 @@
 - [[#on-tangle][On tangle]]
   - [[#making-the-proper-paths][Making the proper paths]]
   - [[#tangling-absolute-paths][Tangling absolute paths]]
-  - [[#tangling-the-right-size-values][Tangling the right size values]]
 - [[#shell][Shell]]
   - [[#on-login-zprofile][On login (~~/.zprofile~)]]
   - [[#quiet-login-hushlogin][Quiet login (~~/.hushlogin~)]]
@@ -23,6 +22,7 @@
   - [[#starting-exwm-x11xinitrc-emacs][Starting ~EXWM~ (~X11/xinitrc-emacs~)]]
   - [[#starting-twm-x11xinitrc-twm][Starting ~twm~ (~X11/xinitrc-twm~)]]
   - [[#configuring-twm-twmtwmrc][Configuring ~twm~ (~twm/twmrc~)]]
+  - [[#status-bar-for-twm-twmconkyrc][Status bar for ~twm~ (~twm/conkyrc~)]]
   - [[#configuring-urxvt-x11xresources][Configuring ~urxvt~ (~X11/xresources~)]]
   - [[#gtk2-appearance-gtk-20gtkrc][GTK2 Appearance (~gtk-2.0/gtkrc~)]]
   - [[#gtk3-appearance-gtk-30settingsini][GTK3 appearance (~gtk-3.0/settings.ini~)]]
@@ -72,8 +72,6 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
   :properties:
   :header-args: :tangle no
   :end:
-There are some fields which require absolute paths, and some which require size values. This means I have to use some ~noweb~ referencing to get my proper absolute paths. I define all of these references here.
-
 ** Making the proper paths
 In order for tangling to work, the proper paths have to be present. This is done with a hidden block that tangles to a temporary file out in the middle of nowhere.
 #+name: mkdir
@@ -91,6 +89,8 @@ In order for tangling to work, the proper paths have to be present. This is done
 #+end_src
 
 ** Tangling absolute paths
+There are some fields which require absolute paths. This means I have to use some ~noweb~ referencing to get my proper absolute paths. I define all of these references here.
+
 *** =$HOME=
 #+name: HOME
 #+begin_src emacs-lisp
@@ -101,25 +101,6 @@ In order for tangling to work, the proper paths have to be present. This is done
 #+name: XDG_CONFIG_HOME
 #+begin_src emacs-lisp
   (getenv "XDG_CONFIG_HOME")
-#+end_src
-
-** Tangling the right size values
-In order to tangle the right sizes, I need to know which of my two laptops is tangling the configuration.
-
-*** Font size
-#+name: fontsize
-#+begin_src emacs-lisp
-  (if (= (shell-command "grep W541 /sys/devices/virtual/dmi/id/product_version") 0)
-      18
-    10)
-#+end_src
-
-*** Cursor size
-#+name: cursorsize
-#+begin_src emacs-lisp
-  (if (= (shell-command "grep W541 /sys/devices/virtual/dmi/id/product_version") 0)
-      48
-    24)
 #+end_src
 
 * Shell
@@ -475,6 +456,17 @@ This is just a point of personal aesthetic preference. I like having some kind o
   :end:
 This file is equally as minimal, as most of the actual configuration is done 
 
+*** Force the use of primary display on my W541
+For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
+#+begin_src sh
+  xrandr | grep eDP1 1> /dev/null 2> /dev/null && {
+      xrandr --output eDP1 --mode 1920x1080 \
+             --output DP2-1 --off \
+             --output DP2-2 --off \
+             --output DP2-3 --off
+  }
+#+end_src
+
 *** X session compliance with XDG Base Directory Specification
 Currently only GTK2 is here, but as I keep on working on it I'll eventually get to a dotfiles setup that has as few configuration files outside of =$XDG_CONFIG_HOME= as possible.
 #+begin_src sh
@@ -492,17 +484,6 @@ Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-st
 This annoyed me. Thankfully there's a fix to it.
 #+begin_src sh
   export QT_QPA_PLATFORMTHEME=gtk2
-#+end_src
-
-*** Determine monitors to use on my W541
-For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
-#+begin_src sh
-  xrandr | grep eDP1 1> /dev/null 2> /dev/null && {
-      xrandr --output eDP1 --mode 2880x1620 \
-             --output DP2-1 --off \
-             --output DP2-2 --off \
-             --output DP2-3 --off
-  }
 #+end_src
 
 *** Make the background the color of my Emacs background
@@ -523,6 +504,17 @@ In this case, we start Emacs.
    :end:
 This is just for funsies. I like ~twm~ even though I'll never truly be able to "live" in it.
 
+*** Force the use of primary display on my W541
+For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
+#+begin_src sh
+  xrandr | grep eDP1 1> /dev/null 2> /dev/null && {
+      xrandr --output eDP1 --mode 1920x1080 \
+             --output DP2-1 --off \
+             --output DP2-2 --off \
+             --output DP2-3 --off
+  }
+#+end_src
+
 *** X session compliance with XDG Base Directory Specification
 Currently only GTK2 is here, but as I keep on working on it I'll eventually get to a dotfiles setup that has as few configuration files outside of =$XDG_CONFIG_HOME= as possible.
 #+begin_src sh
@@ -536,17 +528,6 @@ This annoyed me. Thankfully there's a fix to it.
   export QT_QPA_PLATFORMTHEME=gtk2
 #+end_src
 
-*** Set monitors to use on my W541
-For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
-#+begin_src sh
-  xrandr | grep eDP1 1> /dev/null 2> /dev/null && {
-      xrandr --output eDP1 --mode 2880x1620 \
-             --output DP2-1 --off \
-             --output DP2-2 --off \
-             --output DP2-3 --off
-  }
-#+end_src
-
 *** Disable the trackpad
 I don't really use the trackpad, so there's no point in keeping it enabled.
 #+begin_src sh
@@ -556,19 +537,13 @@ I don't really use the trackpad, so there's no point in keeping it enabled.
 *** Start a compositor
 I don't need it for too much, it just makes things a little nicer.
 #+begin_src sh
-  xcompmgr -f -D 4 &
+  xcompmgr -f -D 5 &
 #+end_src
 
 *** Make =CAPS= do =CTRL=
 I /hate/ caps lock. I have no use for it.
 #+begin_src sh
   setxkbmap -option ctrl:nocaps
-#+end_src
-
-*** Start up a clock
-Since ~twm~ doesn't come with any kind of status indicators, I need to make one for myself and it's started here, placed right above my icon manager. Incidentally, this makes the top right corner bear some resemblance to the BeOS Tracker.
-#+begin_src sh
-  conky -c $XDG_CONFIG_HOME/twm/statusbar &
 #+end_src
 
 *** Fix the cursor
@@ -585,9 +560,21 @@ I'm not entirely tacky.
   fi
 #+end_src
 
+*** X resources
+I source =$XDG_CONIFG_HOME/X11/xresources= for configuration of ~urxvt~, my terminal of choice.
+#+begin_src sh
+  xrdb -merge $XDG_CONFIG_HOME/X11/xresources
+#+end_src
+
+*** Status bar
+Since ~twm~ doesn't come with any kind of status indicators, I need to make one for myself and it's started here, placed right above my icon manager. Incidentally, this makes the top right corner bear some resemblance to the BeOS Tracker.
+#+begin_src sh
+  conky -c $XDG_CONFIG_HOME/twm/conkyrc
+#+end_src
+
 *** Start ~twm~
 #+begin_src sh
-  exec while :; do twm -f $XDG_CONFIG_HOME/twm/twmrc; done
+  exec twm -f $XDG_CONFIG_HOME/twm/twmrc
 #+end_src
 
 ** Configuring ~twm~ (~twm/twmrc~)
@@ -634,7 +621,6 @@ Movement-based actions are defined here.
   Function "resize-or-lower"     { f.resize f.deltastop f.lower }
 
   Function "deiconify-and-raise" { f.deiconify f.raise }
-  Function "deiconify-and-lower" { f.deiconify f.lower }
 #+end_src
 
 *** Windows
@@ -668,10 +654,10 @@ I personally like having a close button, a maximize button, and a minimize butto
 #+begin_src conf-space
   IconDirectory "~/.config/twm/bitmaps"
 
-  LeftTitleButton "close.xbm" = f.delete
-  LeftTitleButton "maximize.xbm" = f.fullzoom
-  LeftTitleButton "minimize.xbm" = f.iconify
-  RightTitleButton "menu12" = f.menu "windowmenu"
+  LeftTitleButton "close" = f.delete
+  LeftTitleButton "maximize" = f.fullzoom
+  LeftTitleButton "minimize" = f.iconify
+  RightTitleButton "menu" = f.menu "windowmenu"
   ButtonIndent 0
   TitleButtonBorderWidth 0
 #+end_src
@@ -722,11 +708,12 @@ Icons are the way windows minimize. There is also an icon manager, which is conf
 *** Mouse bindings
 **** On the icon manager
 - =Button1= = =deiconify-and-raise=
-- =Button3= = Toggle iconify
+- =Button2= = Toggle iconify
+- =Button3= = Lower window
 #+begin_src conf-space
   Button1 = : iconmgr : f.function "deiconify-and-raise"
   Button2 = : iconmgr : f.iconify
-  Button3 = : iconmgr : f.function "deiconify-and-lower"
+  Button3 = : iconmgr : f.lower
 #+end_src
 
 **** On the root window
@@ -772,12 +759,11 @@ This menu is mainly supposed to concern things specifically related to ~twm~ or 
       "Telegram" !"telegram-desktop &"
       "Terminal" !"urxvt &"
       "" f.nop
-      "Restart twm" f.quit
       "Quit"        f.menu "quit"
   }
 
   menu "quit" {
-      "Log out"   !"killall xinit"
+      "Log out"   f.quit
       "Sleep"     !"systemctl suspend -i &"
       "Reboot"    !"restart"
       "Shut down" !"shutdown now"
@@ -850,6 +836,11 @@ The block can be closed off here.
   }
 #+end_src
 
+** Status bar for ~twm~ (~twm/conkyrc~)
+   :properties:
+   :header-args: :tangle (user-config-file "twm/conkyrc")
+Since ~twm~ does not come with
+
 ** Configuring ~urxvt~ (~X11/xresources~)
    :properties:
    :header-args: :tangle (user-config-file "X11/xresources")
@@ -858,9 +849,9 @@ I don't like using Emacs as a terminal when I'm in a non-Emacs desktop environme
 
 *** Font/Scrollbar
 Of course I want to use the same font across all my applications. Also I have no need for a scroll bar.
-#+begin_src conf-xdefaults
+#+begin_src conf-xdefaults :noweb yes
   URxvt*geometry: 80x24
-  *.font: *gohufont*medium*normal*14*
+  URxvt*font: xft:Iosevka:size=10
   URxvt*scrollBar: False
 #+end_src
 
@@ -868,24 +859,24 @@ Of course I want to use the same font across all my applications. Also I have no
 This is basically just Dracula.
 #+begin_src conf-xdefaults
   ! Dracula Xresources palette
-  ,*.foreground: #F8F8F2
-  ,*.background: #282a36
-  ,*.color0:     #000000
-  ,*.color8:     #4D4D4D
-  ,*.color1:     #FF5555
-  ,*.color9:     #FF6E67
-  ,*.color2:     #50FA7B
-  ,*.color10:    #5AF78E
-  ,*.color3:     #F1FA8C
-  ,*.color11:    #F4F99D
-  ,*.color4:     #BD93F9
-  ,*.color12:    #CAA9FA
-  ,*.color5:     #FF79C6
-  ,*.color13:    #FF92D0
-  ,*.color6:     #8BE9FD
-  ,*.color14:    #9AEDFE
-  ,*.color7:     #BFBFBF
-  ,*.color15:    #E6E6E6
+  URxvt*foreground: #F8F8F2
+  URxvt*background: #282a36
+  URxvt*color0:     #000000
+  URxvt*color8:     #4D4D4D
+  URxvt*color1:     #FF5555
+  URxvt*color9:     #FF6E67
+  URxvt*color2:     #50FA7B
+  URxvt*color10:    #5AF78E
+  URxvt*color3:     #F1FA8C
+  URxvt*color11:    #F4F99D
+  URxvt*color4:     #BD93F9
+  URxvt*color12:    #CAA9FA
+  URxvt*color5:     #FF79C6
+  URxvt*color13:    #FF92D0
+  URxvt*color6:     #8BE9FD
+  URxvt*color14:    #9AEDFE
+  URxvt*color7:     #BFBFBF
+  URxvt*color15:    #E6E6E6
 #+end_src
 
 ** GTK2 Appearance (~gtk-2.0/gtkrc~)
@@ -896,9 +887,9 @@ These settings apply the theme, cursor, and icons I prefer, along with other pre
 #+begin_src conf-unix :noweb yes
   gtk-theme-name="Ant-Dracula"
   gtk-icon-theme-name="HighContrast"
-  gtk-font-name="Iosevka <<fontsize()>>"
+  gtk-font-name="Iosevka 10"
   gtk-cursor-theme-name="Bibata_Ice"
-  gtk-cursor-theme-size=<<cursorsize()>>
+  gtk-cursor-theme-size=0
   gtk-toolbar-style=GTK_TOOLBAR_BOTH
   gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
   gtk-button-images=1
@@ -920,9 +911,9 @@ This is the exact same settings as seen in [[#gtk2-appearance-gtkrc][GTK2's conf
   [Settings]
   gtk-theme-name=Ant-Dracula
   gtk-icon-theme-name=HighContrast
-  gtk-font-name=Iosevka <<fontsize()>>
+  gtk-font-name=Iosevka 10
   gtk-cursor-theme-name=Bibata_Ice
-  gtk-cursor-theme-size=<<cursorsize()>>
+  gtk-cursor-theme-size=0
   gtk-toolbar-style=GTK_TOOLBAR_BOTH
   gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
   gtk-button-images=1
