@@ -16,16 +16,17 @@
   - [[#tangling-absolute-paths][Tangling absolute paths]]
   - [[#tangling-the-right-size-values][Tangling the right size values]]
 - [[#shell][Shell]]
-  - [[#on-login-zprofile][On login (~.zprofile~)]]
-  - [[#quiet-login-hushlogin][Quiet login (~.hushlogin~)]]
-  - [[#configuration-zshrc][Configuration (~.zshrc~)]]
+  - [[#on-login-zprofile][On login (~~/.zprofile~)]]
+  - [[#quiet-login-hushlogin][Quiet login (~~/.hushlogin~)]]
+  - [[#configuration-zshrc][Configuration (~~/.zshrc~)]]
 - [[#x-session][X session]]
-  - [[#starting-exwm-xinitrc-emacs][Starting ~EXWM~ (~xinitrc-emacs~)]]
-  - [[#starting-twm-xinitrc-twm][Starting ~twm~ (~xinitrc-twm~)]]
-  - [[#configuring-twm-twmrc][Configuring ~twm~ (~twmrc~)]]
-  - [[#gtk2-appearance-gtkrc][GTK2 Appearance (~gtkrc~)]]
-  - [[#gtk3-appearance-settingsini][GTK3 appearance (~settings.ini~)]]
-- [[#music-player-mpdconf][Music player (~mpd.conf~)]]
+  - [[#starting-exwm-x11xinitrc-emacs][Starting ~EXWM~ (~X11/xinitrc-emacs~)]]
+  - [[#starting-twm-x11xinitrc-twm][Starting ~twm~ (~X11/xinitrc-twm~)]]
+  - [[#configuring-twm-twmtwmrc][Configuring ~twm~ (~twm/twmrc~)]]
+  - [[#configuring-urxvt-x11xresources][Configuring ~urxvt~ (~X11/xresources~)]]
+  - [[#gtk2-appearance-gtk-20gtkrc][GTK2 Appearance (~gtk-2.0/gtkrc~)]]
+  - [[#gtk3-appearance-gtk-30settingsini][GTK3 appearance (~gtk-3.0/settings.ini~)]]
+- [[#music-player-mpdmpdconf][Music player (~mpd/mpd.conf~)]]
 #+END_QUOTE
 
 * About this configuration
@@ -122,7 +123,7 @@ In order to tangle the right sizes, I need to know which of my two laptops is ta
 #+end_src
 
 * Shell
-** On login (~.zprofile~)
+** On login (~~/.zprofile~)
    :properties:
    :header-args: :tangle (user-home-file ".zprofile")
    :end:
@@ -164,7 +165,7 @@ The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my b
   esac
 #+end_src
 
-** Quiet login (~.hushlogin~)
+** Quiet login (~~/.hushlogin~)
    :properties:
    :header-args: :tangle (user-home-file ".hushlogin")
    :end:
@@ -172,7 +173,7 @@ I don't need to know the last time I logged in, I'd rather the login process be 
 #+begin_src :exports none
 #+end_src
 
-** Configuration (~.zshrc~)
+** Configuration (~~/.zshrc~)
    :properties:
    :header-args: :tangle (expand-file-name ".zshrc" (getenv "HOME"))
    :end:
@@ -468,7 +469,7 @@ This is just a point of personal aesthetic preference. I like having some kind o
 #+end_src
 
 * X session
-** Starting ~EXWM~ (~xinitrc-emacs~)
+** Starting ~EXWM~ (~X11/xinitrc-emacs~)
   :properties:
   :header-args: :tangle (user-config-file "X11/xinitrc-emacs")
   :end:
@@ -516,7 +517,7 @@ In this case, we start Emacs.
   exec emacs $_EMACS_DUMP_FILE
 #+end_src
 
-** Starting ~twm~ (~xinitrc-twm~)
+** Starting ~twm~ (~X11/xinitrc-twm~)
    :properties:
    :header-args: :tangle (user-config-file "X11/xinitrc-twm")
    :end:
@@ -555,7 +556,7 @@ I don't really use the trackpad, so there's no point in keeping it enabled.
 *** Start a compositor
 I don't need it for too much, it just makes things a little nicer.
 #+begin_src sh
-  xcompmgr -f -D 3 &
+  xcompmgr -f -D 4 &
 #+end_src
 
 *** Make =CAPS= do =CTRL=
@@ -565,11 +566,9 @@ I /hate/ caps lock. I have no use for it.
 #+end_src
 
 *** Start up a clock
-Since ~twm~ doesn't come with a clock, I need to grab one for myself and it's started here, placed right above my icon manager. Incidentally, this makes the top right corner bear some resemblance to the BeOS Tracker.
+Since ~twm~ doesn't come with any kind of status indicators, I need to make one for myself and it's started here, placed right above my icon manager. Incidentally, this makes the top right corner bear some resemblance to the BeOS Tracker.
 #+begin_src sh
-  xclock -digital -strftime '%a %d %b | %H:%M:%S' \
-         -face 'Gohu GohuFont' -update 1 -padding 2 \
-         -bg "#44475a" -fg "#ffffff" -geometry 171x17-0+0 &
+  conky -c $XDG_CONFIG_HOME/twm/statusbar &
 #+end_src
 
 *** Fix the cursor
@@ -588,12 +587,12 @@ I'm not entirely tacky.
 
 *** Start ~twm~
 #+begin_src sh
-  exec twm -f $XDG_CONFIG_HOME/X11/twmrc
+  exec while :; do twm -f $XDG_CONFIG_HOME/twm/twmrc; done
 #+end_src
 
-** Configuring ~twm~ (~twmrc~)
+** Configuring ~twm~ (~twm/twmrc~)
    :properties:
-   :header-args: :tangle (user-config-file "X11/twmrc")
+   :header-args: :tangle (user-config-file "twm/twmrc")
    :end:
 I decided for funsies to start my own ~twm~ configuration. Honestly I kinda like this window manager...
 
@@ -667,7 +666,7 @@ For some reason, the default ~twm~ title bars are configured in a way that is an
 **** Title buttons
 I personally like having a close button, a maximize button, and a minimize button on every window. Why wouldn't you include those? On the right side is a menu. I don't want them to be smaller, and I don't want them to have borders.
 #+begin_src conf-space
-  IconDirectory "~/.config/X11/bitmaps"
+  IconDirectory "~/.config/twm/bitmaps"
 
   LeftTitleButton "close.xbm" = f.delete
   LeftTitleButton "maximize.xbm" = f.fullzoom
@@ -691,19 +690,24 @@ These windows should not have a title.
 #+begin_src conf-space
   NoTitle {
       "TWM Icon Manager"
-      "xclock"
+      "conky (eternity)"
+      "conky (navi)"
   }
 #+end_src
 
 *** Icon Manager
-Icons are the way windows minimize. There is also an icon manager, which is configured in this section. The icon manager should be present at startup, living in the top right corner of my screen. Icons themselves shouldn't show up, rather windows should be minimized fully. The clock next to it should never show up, and the icon manager itself should automatically rise when it's focused.
+Icons are the way windows minimize. There is also an icon manager, which is configured in this section. The icon manager should be present at startup, living in the top right corner of my screen. Icons themselves shouldn't show up, rather windows should be minimized fully. The clock next to it should never show up, and the icon manager itself should automatically rise when it's focused. It also shouldn't move around.
 #+begin_src conf-space
   ShowIconManager
   SortIconManager
   NoCaseSensitive
   IconifyByUnmapping
   IconManagerGeometry "=171x10-0+20" 1
-  IconManagerDontShow { "xclock" "TWM Icon Manager" }
+  IconManagerDontShow {
+      "conky (navi)"
+      "conky (eternity)"
+      "TWM Icon Manager"
+  }
   AutoRaise { "TWM Icon Manager" }
 #+end_src
 
@@ -766,14 +770,14 @@ This menu is mainly supposed to concern things specifically related to ~twm~ or 
       "Firefox"  !"firefox --new-window &"
       "Steam"    !"steam &"
       "Telegram" !"telegram-desktop &"
-      "Terminal" !"emacsclient -c --eval '(vterm)' || emacs $_EMACS_DUMP_FILE --eval '(vterm)' &"
+      "Terminal" !"urxvt &"
       "" f.nop
-      "Restart twm" f.restart
+      "Restart twm" f.quit
       "Quit"        f.menu "quit"
   }
 
   menu "quit" {
-      "Log out"   f.quit
+      "Log out"   !"killall xinit"
       "Sleep"     !"systemctl suspend -i &"
       "Reboot"    !"restart"
       "Shut down" !"shutdown now"
@@ -784,10 +788,11 @@ This menu is mainly supposed to concern things specifically related to ~twm~ or 
 This is the menu on every window.
 #+begin_src conf-space
   menu "windowmenu" {
-      "Iconify" f.iconify
-      "Raise"   f.raise
-      "Lower"   f.lower
-      "Focus"   f.focus
+      "Identify" f.identify
+      "Iconify"  f.iconify
+      "Raise"    f.raise
+      "Lower"    f.lower
+      "Focus"    f.focus
       "" f.nop
       "Close" f.delete
       "Kill"  f.destroy
@@ -845,7 +850,45 @@ The block can be closed off here.
   }
 #+end_src
 
-** GTK2 Appearance (~gtkrc~)
+** Configuring ~urxvt~ (~X11/xresources~)
+   :properties:
+   :header-args: :tangle (user-config-file "X11/xresources")
+   :end:
+I don't like using Emacs as a terminal when I'm in a non-Emacs desktop environment. It just doesn't make sense.
+
+*** Font/Scrollbar
+Of course I want to use the same font across all my applications. Also I have no need for a scroll bar.
+#+begin_src conf-xdefaults
+  URxvt*geometry: 80x24
+  *.font: *gohufont*medium*normal*14*
+  URxvt*scrollBar: False
+#+end_src
+
+*** Colors
+This is basically just Dracula.
+#+begin_src conf-xdefaults
+  ! Dracula Xresources palette
+  ,*.foreground: #F8F8F2
+  ,*.background: #282a36
+  ,*.color0:     #000000
+  ,*.color8:     #4D4D4D
+  ,*.color1:     #FF5555
+  ,*.color9:     #FF6E67
+  ,*.color2:     #50FA7B
+  ,*.color10:    #5AF78E
+  ,*.color3:     #F1FA8C
+  ,*.color11:    #F4F99D
+  ,*.color4:     #BD93F9
+  ,*.color12:    #CAA9FA
+  ,*.color5:     #FF79C6
+  ,*.color13:    #FF92D0
+  ,*.color6:     #8BE9FD
+  ,*.color14:    #9AEDFE
+  ,*.color7:     #BFBFBF
+  ,*.color15:    #E6E6E6
+#+end_src
+
+** GTK2 Appearance (~gtk-2.0/gtkrc~)
    :properties:
    :header-args: :tangle (user-config-file "gtk-2.0/gtkrc")
    :end:
@@ -868,7 +911,7 @@ These settings apply the theme, cursor, and icons I prefer, along with other pre
   gtk-xft-rgba="rgb"
 #+end_src
 
-** GTK3 appearance (~settings.ini~)
+** GTK3 appearance (~gtk-3.0/settings.ini~)
    :properties:
    :header-args: :tangle (user-config-file "gtk-3.0/settings.ini")
    :end:
@@ -892,7 +935,7 @@ This is the exact same settings as seen in [[#gtk2-appearance-gtkrc][GTK2's conf
   gtk-xft-rgba=rgb
 #+end_src
 
-* Music player (~mpd.conf~)
+* Music player (~mpd/mpd.conf~)
   :properties:
   :header-args: :tangle (user-config-file "mpd/mpd.conf")
   :end:
