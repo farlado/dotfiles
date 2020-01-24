@@ -504,15 +504,32 @@ In this case, we start Emacs.
    :end:
 This is just for funsies. I like ~twm~ even though I'll never truly be able to "live" in it.
 
-*** Force the use of primary display on my W541
-For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
+*** Force 1080p on my W541
+Because I limit the resolution to 1080p but my W541 wants to display 3K, I need to force it. The displays I dock to also need configuration.
 #+begin_src sh
-  xrandr | grep eDP1 1> /dev/null 2> /dev/null && {
-      xrandr --output eDP1 --mode 1920x1080 \
+  xrandr | grep 'DP2-1 connected' 1> /dev/null 2>/dev/null && {
+      xrandr --output eDP1 --off \
+             --output DP2-1 --mode 1920x1080 --rotate left --pos 0x0 \
+             --output DP2-2 --primary --rate 75 --mode 1920x1080 --pos 1080x0 \
+             --output DP2-3 --mode 1920x1080 --rotate right --pos 3000x0
+  } || {
+      xrandr --output eDP1 --primary --mode 1920x1080 --pos 0x0 \
              --output DP2-1 --off \
              --output DP2-2 --off \
              --output DP2-3 --off
   }
+#+end_src
+*** Manage mouse and keyboard
+I don't really use the trackpad, so there's no point in keeping it enabled. I also need to configure my trackball. Lastly, turn caps lock into another control key.
+#+begin_src sh
+  xinput disable $(xinput | grep Synap | head -n 1 | sed -r 's/.*id=([0-9]+).*/\1/')
+
+  tb=$(xinput | grep ELECOM | head -n 1 | sed -r 's/.*id=([0-9]+).*/\1/')
+  xinput set-prop $tb 'libinput Button Scrolling Button' 10
+  xinput set-prop $tb 'libinput Scroll Method Enabled' 0 0 1
+  xinput set-button-map $tb 1 2 3 4 5 6 7 8 9 2 1 2
+
+  setxkbmap us -option ctrl:nocaps
 #+end_src
 
 *** X session compliance with XDG Base Directory Specification
@@ -528,22 +545,10 @@ This annoyed me. Thankfully there's a fix to it.
   export QT_QPA_PLATFORMTHEME=gtk2
 #+end_src
 
-*** Disable the trackpad
-I don't really use the trackpad, so there's no point in keeping it enabled.
-#+begin_src sh
-  xinput disable $(xinput | grep Synap | head -n 1 | sed -r 's/.*id=([0-9]+).*/\1/')
-#+end_src
-
 *** Start a compositor
 I don't need it for too much, it just makes things a little nicer.
 #+begin_src sh
   xcompmgr -f -D 5 &
-#+end_src
-
-*** Make =CAPS= do =CTRL=
-I /hate/ caps lock. I have no use for it.
-#+begin_src sh
-  setxkbmap -option ctrl:nocaps
 #+end_src
 
 *** Fix the cursor
