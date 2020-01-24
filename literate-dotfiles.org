@@ -839,7 +839,72 @@ The block can be closed off here.
 ** Status bar for ~twm~ (~twm/conkyrc~)
    :properties:
    :header-args: :tangle (user-config-file "twm/conkyrc")
-Since ~twm~ does not come with
+   :end:
+Since ~twm~ does not come with its own status bar, I need to make one for it.
+
+*** Config
+#+begin_src conf
+  conky.config = {
+#+end_src
+
+**** Font
+Use ~xft~ for nicer looking fonts, and make the text as clean as possible.
+#+begin_src conf
+  use_xft = true,
+  font = 'Gohu GohuFont:pixelsize=14',
+  draw_outline = false,
+  draw_shades = false,
+#+end_src
+
+**** Window
+The window should not be managed. It will handle itself. Its background is the same color as the borders on windows in ~twm~, since it is supposed to look as though it is attached to the icon manager.
+#+begin_src conf
+  own_window = true,
+  own_window_type = 'override',
+  own_window_colour = '44475a',
+  default_color = 'white',
+  double_buffer = true,
+  border_width = 0,
+#+end_src
+
+**** Position
+Place the status bar at the top right corner, offset just barely to make the borders present.
+#+begin_src conf
+  alignment = 'top_right',
+  gap_x = 4,
+  gap_y = 4,
+#+end_src
+
+**** Update time
+Update the status bar every second, since a seconds counter is included.
+#+begin_src conf
+  update_interval = 1.0,
+#+end_src
+
+**** Fork after load
+#+begin_src conf
+  background = true,
+#+end_src
+
+With that, this block can be closed.
+#+begin_src conf
+  }
+#+end_src
+
+*** Text
+- Screen brightness
+- Volume percentage
+- Battery percentage
+- Time and date
+#+begin_src conf
+  conky.text = [[
+  Brightness: ${exec brightnessctl i | grep % | sed -r 's/.*\(([0-9]+%).*/\1/'} | \
+  Volume: ${exec amixer get Master | grep Left: | sed -r 's/.*\[(.*%).*/\1/'}\
+  ${exec [ "$(amixer get Master | grep off)" ] && echo " (Muted)" } | \
+  Battery: ${battery_percent}% | \
+  ${time %a %d %b | %H:%M:%S}
+  ]]
+#+end_src
 
 ** Configuring ~urxvt~ (~X11/xresources~)
    :properties:
