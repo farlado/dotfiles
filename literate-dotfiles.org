@@ -381,11 +381,23 @@ Finally, if when writing the prompt a git branch is found, return a string with 
 *** When Emacs is the terminal
 There is an Emacs package called ~vterm~ which allows use of Emacs as a fully-featured terminal emulator. There are a number of features which require configuration in the shell.
 #+begin_src sh
-  if [[ $INSIDE_EMACS == "vterm" ]]; then
+  if [ "$INSIDE_EMACS" = "vterm" ]; then
 #+end_src
 
 **** Push Emacs commands from ~vterm~
-This allows 
+This allows me to clear scrollback easily.
+#+begin_src sh
+  function vterm_printf(){
+      if [ -n "$TMUX" ]; then
+          printf "\ePtmux;\e\e]%s\007\e\\" "$1"
+      elif [ "${TERM%%-*}" = "screen" ]; then
+          # GNU screen (screen, screen-256color, screen-256color-bce)
+          printf "\eP\e]%s\007\e\\" "$1"
+      else
+          printf "\e]%s\e\\" "$1"
+      fi
+  }
+#+end_src
 
 **** Clear all scrollback when clearing
 This is why we enable pushing Emacs commands from ~vterm~.
@@ -611,16 +623,19 @@ The default font looks okay, but.......
 **** Functions
 Movement-based actions are defined here.
 - Immediately allow movement of a window.
-- Give the chance to lower/raise/iconify when moving/resizing.
+- Raise/lower/iconify when moving.
+- Lower when resizing.
 - Deiconify and raise.
 #+begin_src conf-space
   MoveDelta 1
-  Function "move-or-lower"       { f.move f.deltastop f.lower }
-  Function "resize-or-lower"     { f.resize f.deltastop f.lower }
   Function "move-or-raise"       { f.move f.deltastop f.raise }
+  Function "move-or-lower"       { f.move f.deltastop f.lower }
   Function "move-or-iconify"     { f.move f.deltastop f.iconify }
+
+  Function "resize-or-lower"     { f.resize f.deltastop f.lower }
+
   Function "deiconify-and-raise" { f.deiconify f.raise }
-  Function "force-iconify"       { f.deiconify f.iconify }
+  Function "deiconify-and-lower" { f.deiconify f.lower }
 #+end_src
 
 *** Windows
@@ -703,12 +718,11 @@ Icons are the way windows minimize. There is also an icon manager, which is conf
 *** Mouse bindings
 **** On the icon manager
 - =Button1= = =deiconify-and-raise=
-- =Button2= = Toggle iconify
-- =Button3= = =force-iconify=
+- =Button3= = Toggle iconify
 #+begin_src conf-space
   Button1 = : iconmgr : f.function "deiconify-and-raise"
   Button2 = : iconmgr : f.iconify
-  Button3 = : iconmgr : f.function "force-iconify"
+  Button3 = : iconmgr : f.function "deiconify-and-lower"
 #+end_src
 
 **** On the root window
