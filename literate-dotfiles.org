@@ -45,15 +45,13 @@ Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME= 
 This repository is still very much a hybrid of literate files and files that very much are not literate. However, it should be possible, so long as these files are placed into the right directories, to end up with a working desktop environment. I also do a lot of system configuration, but it's done in a [[file:literate-sysconfig.org][different file]].
 
 ** Installation
-1. Clone the repository
-2. Checkout its contents
-3. +Run the deploy script within (which will install all dependencies too)+ This is currently borked to hell, do not bother, it will be fixed in due time. See more about it [[file:deploy/literate-deploy.org][here]]. (coming soon)
+1. Clone the repository into its own directory (I personally use =$HOME/.config/dotfiles=)
+2. Run the deploy script within
 
 From a command line, this should look like:
 #+begin_src sh
-  $ git clone --bare https://github.com/farlado/dotfiles $HOME/.config/dotfiles
-  $ git --git-dir=$HOME/.config/dotfiles --work-tree=$HOME checkout
-  $ $HOME/.config/deploy/deploy
+  $ git clone https://github.com/farlado/dotfiles $HOME/.config/dotfiles
+  $ $HOME/.config/deploy/deploy.sh
 #+end_src
 
 ** License
@@ -94,9 +92,13 @@ In order for tangling to work, the proper paths have to be present. This is done
   (shell-command "sleep 2 && killall firefox & firefox")
   (make-directory (expand-file-name
                    "chrome"
-                   (car (file-expand-wildcards "~/.mozilla/firefox/*.default-release")))
+                   (car (file-expand-wildcards
+                         (concat (getenv "HOME")
+                                 "/.mozilla/firefox/*.default-release"))))
                   t)
-  (setenv "FFDIR" (car (file-expand-wildcards "~/.mozilla/firefox/*.default-release")))
+  (setenv "FFDIR" (car (file-expand-wildcards
+                        (concat (getenv "HOME")
+                                "/.mozilla/firefox/*.default-release"))))
 #+end_src
 #+begin_src text :tangle /tmp/dots :noweb yes :exports none
   <<mkdir()>>
