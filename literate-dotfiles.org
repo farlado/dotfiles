@@ -1,6 +1,7 @@
 #+title: Farlado's Illiterate Dotfiles
 #+subtitle: A far-from-sane literate dotfiles configuration
 #+author: Farlado
+#+startup: hideblocks
 #+language: en
 #+options: num:nil toc:1
 
@@ -21,12 +22,17 @@
 - [[#x-session][X session]]
   - [[#starting-exwm-x11xinitrc-emacs][Starting ~EXWM~ (~X11/xinitrc-emacs~)]]
   - [[#starting-twm-x11xinitrc-twm][Starting ~twm~ (~X11/xinitrc-twm~)]]
-  - [[#configuring-twm-twmtwmrc][Configuring ~twm~ (~twm/twmrc~)]]
-  - [[#status-bar-for-twm-twmconkyrc][Status bar for ~twm~ (~twm/conkyrc~)]]
   - [[#configuring-urxvt-x11xresources][Configuring ~urxvt~ (~X11/xresources~)]]
+  - [[#configuring-twm-twmtwmrc][Configuring ~twm~ (~twm/twmrc~)]]
+  - [[#icons-in-twm-twmbitmaps][Icons in ~twm~ (~twm/bitmaps~)]]
+  - [[#status-bar-for-twm-twmconkyrc][Status bar for ~twm~ (~twm/conkyrc~)]]
   - [[#gtk2-appearance-gtk-20gtkrc][GTK2 Appearance (~gtk-2.0/gtkrc~)]]
   - [[#gtk3-appearance-gtk-30settingsini][GTK3 appearance (~gtk-3.0/settings.ini~)]]
 - [[#music-player-mpdmpdconf][Music player (~mpd/mpd.conf~)]]
+- [[#web-browser-firefox][Web browser (Firefox)]]
+  - [[#disabling-tabs-chromeuserchromecss][Disabling tabs (~chrome/userChrome.css~)]]
+  - [[#respecting-additional-settings-userjs][Respecting additional settings (~user.js~)]]
+  - [[#ad-blocker-configuration-adblocktxt][Ad blocker configuration (~adblock.txt~)]]
 #+END_QUOTE
 
 * About this configuration
@@ -73,7 +79,7 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
   :header-args: :tangle no
   :end:
 ** Making the proper paths
-In order for tangling to work, the proper paths have to be present. This is done with a hidden block that tangles to a temporary file out in the middle of nowhere.
+In order for tangling to work, the proper paths have to be present. This is done with a hidden block that tangles to a temporary file out in the middle of nowhere. In order to do configurations to Firefox, an additional block is used to run it for a short time to generate profiles.
 #+name: mkdir
 #+begin_src emacs-lisp
   (dolist (directory '(".cache/zsh"
@@ -81,8 +87,16 @@ In order for tangling to work, the proper paths have to be present. This is done
                        ".config/X11"
                        ".config/gtk-2.0"
                        ".config/gtk-3.0"
-                       ".local/share/zsh"))
+                       ".local/share/zsh"
+                       ".config/twm/bitmaps"))
     (make-directory (expand-file-name directory (getenv "HOME")) t))
+
+  (shell-command "sleep 2 && killall firefox & firefox")
+  (make-directory (expand-file-name
+                   "chrome"
+                   (car (file-expand-wildcards "~/.mozilla/firefox/*.default-release")))
+                  t)
+  (setenv "FFDIR" (car (file-expand-wildcards "~/.mozilla/firefox/*.default-release")))
 #+end_src
 #+begin_src text :tangle /tmp/dots :noweb yes :exports none
   <<mkdir()>>
@@ -454,36 +468,28 @@ This is just a point of personal aesthetic preference. I like having some kind o
   :properties:
   :header-args: :tangle (user-config-file "X11/xinitrc-emacs")
   :end:
-This file is equally as minimal, as most of the actual configuration is done 
+Emacs is my daily-driver desktop. This file is relatively minimal since most configuration is done in Emacs itself.
 
-*** Force the use of primary display on my W541
-For some reason, I was previously having display issues, and I included this bit of code in my ~.xinitrc~ and it made the unintended behavior stop.
+*** Force 1080p on my W541 displays
+Because I limit the resolution to 1080p but my W541 wants to display 3K, I need to force it. The displays I dock to also need configuration.
 #+begin_src sh
-  xrandr | grep eDP1 1> /dev/null 2> /dev/null && {
-      xrandr --output eDP1 --mode 1920x1080 \
+  xrandr | grep 'DP2-1 connected' 1> /dev/null 2>/dev/null && {
+      xrandr --output eDP1 --off \
+             --output DP2-1 --mode 1920x1080 --rotate left --pos 0x0 \
+             --output DP2-2 --primary --rate 75 --mode 1920x1080 --pos 1080x0 \
+             --output DP2-3 --mode 1920x1080 --rotate right --pos 3000x0
+  } || {
+      xrandr --output eDP1 --primary --mode 1920x1080 --pos 0x0 \
              --output DP2-1 --off \
              --output DP2-2 --off \
              --output DP2-3 --off
   }
 #+end_src
 
-*** X session compliance with XDG Base Directory Specification
-Currently only GTK2 is here, but as I keep on working on it I'll eventually get to a dotfiles setup that has as few configuration files outside of =$XDG_CONFIG_HOME= as possible.
-#+begin_src sh
-  export XDG_CURRENT_DESKTOP="emacs"
-  export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
-#+end_src
-
 *** Set an environment variable for the window manager
 Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-startup-3][my Emacs configuration]] I use the environment variable ~_RUN_EXWM~ to signal to Emacs that it should run as my desktop environment.
 #+begin_src sh
   export _RUN_EXWM=1
-#+end_src
-
-*** Uniformity between Qt and GTK applications
-This annoyed me. Thankfully there's a fix to it.
-#+begin_src sh
-  export QT_QPA_PLATFORMTHEME=gtk2
 #+end_src
 
 *** Make the background the color of my Emacs background
@@ -519,6 +525,7 @@ Because I limit the resolution to 1080p but my W541 wants to display 3K, I need 
              --output DP2-3 --off
   }
 #+end_src
+
 *** Manage mouse and keyboard
 I don't really use the trackpad, so there's no point in keeping it enabled. I also need to configure my trackball. Lastly, turn caps lock into another control key.
 #+begin_src sh
@@ -532,29 +539,23 @@ I don't really use the trackpad, so there's no point in keeping it enabled. I al
   setxkbmap us -option ctrl:nocaps
 #+end_src
 
-*** X session compliance with XDG Base Directory Specification
-Currently only GTK2 is here, but as I keep on working on it I'll eventually get to a dotfiles setup that has as few configuration files outside of =$XDG_CONFIG_HOME= as possible.
-#+begin_src sh
-  export WM="twm"
-  export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
-#+end_src
-
-*** Uniformity between Qt and GTK applications
-This annoyed me. Thankfully there's a fix to it.
-#+begin_src sh
-  export QT_QPA_PLATFORMTHEME=gtk2
-#+end_src
-
 *** Start a compositor
 I don't need it for too much, it just makes things a little nicer.
 #+begin_src sh
   xcompmgr -f -D 5 &
 #+end_src
 
-*** Fix the cursor
-An annoyance that it doesn't look correct right away...
+*** Qt/GTK uniformity
+This annoyed me. Thankfully there's a fix to it.
 #+begin_src sh
-  xsetroot -cursor_name left_ptr
+  export QT_QPA_PLATFORMTHEME=gtk2
+#+end_src
+
+*** XDG Compliance
+Currently only GTK2 is here, but as I keep on working on it I'll eventually get to a dotfiles setup that has as few configuration files outside of =$XDG_CONFIG_HOME= as possible.
+#+begin_src sh
+  export WM="twm"
+  export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 #+end_src
 
 *** Set wallpaper
@@ -571,6 +572,12 @@ I source =$XDG_CONIFG_HOME/X11/xresources= for configuration of ~urxvt~, my term
   xrdb -merge $XDG_CONFIG_HOME/X11/xresources
 #+end_src
 
+*** Fix cursor
+An annoyance that it doesn't look correct right away...
+#+begin_src sh
+  xsetroot -cursor_name left_ptr
+#+end_src
+
 *** Status bar
 Since ~twm~ doesn't come with any kind of status indicators, I need to make one for myself and it's started here, placed right above my icon manager. Incidentally, this makes the top right corner bear some resemblance to the BeOS Tracker.
 #+begin_src sh
@@ -582,11 +589,49 @@ Since ~twm~ doesn't come with any kind of status indicators, I need to make one 
   exec twm -f $XDG_CONFIG_HOME/twm/twmrc
 #+end_src
 
+** Configuring ~urxvt~ (~X11/xresources~)
+   :properties:
+   :header-args: :tangle (user-config-file "X11/xresources")
+   :end:
+I don't like using Emacs as a terminal when I'm in a non-Emacs desktop environment. It just doesn't make sense.
+
+*** Font/Scrollbar
+Of course I want to use the same font across all my applications. Also I have no need for a scroll bar.
+#+begin_src conf-xdefaults :noweb yes
+  URxvt*geometry: 80x24
+  URxvt*font: xft:Iosevka:size=10
+  URxvt*scrollBar: False
+#+end_src
+
+*** Colors
+This is basically just Dracula.
+#+begin_src conf-xdefaults
+  ! Dracula Xresources palette
+  URxvt*foreground: #F8F8F2
+  URxvt*background: #282a36
+  URxvt*color0:     #000000
+  URxvt*color8:     #4D4D4D
+  URxvt*color1:     #FF5555
+  URxvt*color9:     #FF6E67
+  URxvt*color2:     #50FA7B
+  URxvt*color10:    #5AF78E
+  URxvt*color3:     #F1FA8C
+  URxvt*color11:    #F4F99D
+  URxvt*color4:     #BD93F9
+  URxvt*color12:    #CAA9FA
+  URxvt*color5:     #FF79C6
+  URxvt*color13:    #FF92D0
+  URxvt*color6:     #8BE9FD
+  URxvt*color14:    #9AEDFE
+  URxvt*color7:     #BFBFBF
+  URxvt*color15:    #E6E6E6
+#+end_src
+
 ** Configuring ~twm~ (~twm/twmrc~)
    :properties:
    :header-args: :tangle (user-config-file "twm/twmrc")
    :end:
-I decided for funsies to start my own ~twm~ configuration. Honestly I kinda like this window manager...
+I decided for funsies to start my own ~twm~ configuration. Honestly I kinda like this window manager, even if I can't really "live" in it.
 
 *** Font
 The default font looks okay, but.......
@@ -841,6 +886,46 @@ The block can be closed off here.
   }
 #+end_src
 
+** Icons in ~twm~ (~twm/bitmaps~)
+Incidentally, X bitmaps are plain text, so they can be tangled instead of needing to be included in my git repository.
+
+*** Menu
+#+begin_src text :tangle (user-config-file "twm/bitmaps/menu")
+  #define menu12_width 12
+  #define menu12_height 12
+  static unsigned char menu12_bits[] = {
+     0xfe, 0x03, 0x02, 0x02, 0x02, 0x06, 0x72, 0x06, 0x02, 0x06, 0x72, 0x06,
+     0x02, 0x06, 0x72, 0x06, 0x02, 0x06, 0x02, 0x06, 0xfe, 0x07, 0xf8, 0x07
+  };
+#+end_src
+
+*** Close
+#+begin_src text :tangle (user-config-file "twm/bitmaps/close")
+  #define close_width 7
+  #define close_height 7
+  static unsigned char close_bits[] = {
+    0x41, 0x22, 0x14, 0x08, 0x14, 0x22, 0x41
+  };
+#+end_src
+
+*** Maximize
+#+begin_src text :tangle (user-config-file "twm/bitmaps/maximize")
+  #define maximize_width 7
+  #define maximize_height 7
+  static unsigned char maximize_bits[] = {
+    0x7f, 0x7f, 0x41, 0x41, 0x41, 0x41, 0x7f
+  };
+#+end_src
+
+*** Minimize
+#+begin_src text :tangle (user-config-file "twm/bitmaps/minimize")
+  #define minimize_width 7
+  #define minimize_height 7
+  static unsigned char minimize_bits[] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0x7f
+  };
+#+end_src
+
 ** Status bar for ~twm~ (~twm/conkyrc~)
    :properties:
    :header-args: :tangle (user-config-file "twm/conkyrc")
@@ -909,44 +994,6 @@ With that, this block can be closed.
   Battery: ${battery_percent}% | \
   ${time %a %d %b | %H:%M:%S}
   ]]
-#+end_src
-
-** Configuring ~urxvt~ (~X11/xresources~)
-   :properties:
-   :header-args: :tangle (user-config-file "X11/xresources")
-   :end:
-I don't like using Emacs as a terminal when I'm in a non-Emacs desktop environment. It just doesn't make sense.
-
-*** Font/Scrollbar
-Of course I want to use the same font across all my applications. Also I have no need for a scroll bar.
-#+begin_src conf-xdefaults :noweb yes
-  URxvt*geometry: 80x24
-  URxvt*font: xft:Iosevka:size=10
-  URxvt*scrollBar: False
-#+end_src
-
-*** Colors
-This is basically just Dracula.
-#+begin_src conf-xdefaults
-  ! Dracula Xresources palette
-  URxvt*foreground: #F8F8F2
-  URxvt*background: #282a36
-  URxvt*color0:     #000000
-  URxvt*color8:     #4D4D4D
-  URxvt*color1:     #FF5555
-  URxvt*color9:     #FF6E67
-  URxvt*color2:     #50FA7B
-  URxvt*color10:    #5AF78E
-  URxvt*color3:     #F1FA8C
-  URxvt*color11:    #F4F99D
-  URxvt*color4:     #BD93F9
-  URxvt*color12:    #CAA9FA
-  URxvt*color5:     #FF79C6
-  URxvt*color13:    #FF92D0
-  URxvt*color6:     #8BE9FD
-  URxvt*color14:    #9AEDFE
-  URxvt*color7:     #BFBFBF
-  URxvt*color15:    #E6E6E6
 #+end_src
 
 ** GTK2 Appearance (~gtk-2.0/gtkrc~)
@@ -1031,3 +1078,277 @@ This is a local instance
   port "6601"
 #+end_src
 
+* Web browser (Firefox)
+Much human intervention is still required of this part of the configuration:
+- Extensions do not automatically install.
+- Configuration of the ad blocker is not automatic.
+- Some website specific settings cannot be set here.
+
+** Disabling tabs (~chrome/userChrome.css~)
+Since Emacs manages my windows as buffers, it makes no sense to have multiple tabs per single buffer. Part of this involves removing the tab bar.
+#+begin_src css :tangle (expand-file-name "chrome/userChrome.css" (getenv "FFDIR"))
+  #TabsToolbar { visibility: collapse !important; }
+#+end_src
+
+** Respecting additional settings (~user.js~)
+Since I change a lot of settings, I just spill this verbatim. It's not actually shown because it's not all that special.
+#+begin_src js :exports none :tangle (expand-file-name "user.js" (getenv "FFDIR"))
+  user_pref("app.shield.optoutstudies.enabled", true);
+  user_pref("browser.aboutConfig.showWarning", false);
+  user_pref("browser.contentblocking.category", "strict");
+  user_pref("browser.ctrlTab.recentlyUsedOrder", false);
+  user_pref("browser.laterrun.enabled", true);
+  user_pref("browser.link.open_newwindow", 2);
+  user_pref("browser.migration.version", 89);
+  user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", false);
+  user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features", false);
+  user_pref("browser.newtabpage.activity-stream.feeds.section.highlights", false);
+  user_pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
+  user_pref("browser.newtabpage.activity-stream.feeds.snippets", false);
+  user_pref("browser.newtabpage.activity-stream.feeds.topsites", false);
+  user_pref("browser.newtabpage.activity-stream.section.highlights.includeBookmarks", false);
+  user_pref("browser.newtabpage.activity-stream.section.highlights.includeDownloads", false);
+  user_pref("browser.newtabpage.activity-stream.section.highlights.includePocket", false);
+  user_pref("browser.newtabpage.activity-stream.section.highlights.includeVisited", false);
+  user_pref("browser.newtabpage.activity-stream.showSearch", false);
+  user_pref("browser.newtabpage.activity-stream.showSponsored", false);
+  user_pref("browser.newtabpage.enabled", false);
+  user_pref("browser.search.suggest.enabled", false);
+  user_pref("browser.startup.homepage", "about:blank");
+  user_pref("browser.uiCustomization.state", "{\"placements\":{\"widget-overflow-fixed-list\":[],\"nav-bar\":[\"back-button\",\"forward-button\",\"stop-reload-button\",\"urlbar-container\",\"downloads-button\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"tabbrowser-tabs\",\"new-tab-button\",\"alltabs-button\"],\"PersonalToolbar\":[\"personal-bookmarks\"]},\"seen\":[\"developer-button\",\"https-everywhere_eff_org-browser-action\",\"ublock0_raymondhill_net-browser-action\",\"jid1-mnnxcxisbpnsxq_jetpack-browser-action\",\"woop-noopscoopsnsxq_jetpack-browser-action\"],\"dirtyAreaCache\":[\"nav-bar\",\"toolbar-menubar\",\"TabsToolbar\",\"PersonalToolbar\"],\"currentVersion\":16,\"newElementCount\":3}");
+  user_pref("browser.uidensity", 1);
+  user_pref("browser.urlbar.placeholderName", "Google");
+  user_pref("browser.urlbar.suggest.bookmark", false);
+  user_pref("browser.urlbar.suggest.openpage", false);
+  user_pref("datareporting.healthreport.uploadEnabled", false);
+  user_pref("dom.forms.autocomplete.formautofill", true);
+  user_pref("extensions.activeThemeID", "default-theme@mozilla.org");
+  user_pref("extensions.incognito.migrated", true);
+  user_pref("extensions.lastAppBuildId", "20200120145402");
+  user_pref("extensions.lastAppVersion", "72.0.2");
+  user_pref("extensions.lastPlatformVersion", "72.0.2");
+  user_pref("extensions.pendingOperations", false);
+  user_pref("extensions.systemAddonSet", "{\"schema\":1,\"addons\":{}}");
+  user_pref("extensions.ui.dictionary.hidden", true);
+  user_pref("extensions.ui.lastCategory", "addons://list/extension");
+  user_pref("extensions.ui.locale.hidden", true);
+  user_pref("extensions.webcompat.perform_injections", true);
+  user_pref("extensions.webcompat.perform_ua_overrides", true);
+  user_pref("font.name.serif.x-western", "Iosevka");
+  user_pref("font.size.variable.x-western", 10);
+  user_pref("general.smoothScroll", false);
+  user_pref("media.peerconnection.ice.default_address_only", true);
+  user_pref("media.peerconnection.ice.no_host", true);
+  user_pref("media.videocontrols.picture-in-picture.video-toggle.enabled", false);
+  user_pref("network.dns.disablePrefetch", true);
+  user_pref("network.http.speculative-parallel-limit", 0);
+  user_pref("network.predictor.cleaned-up", true);
+  user_pref("network.predictor.enabled", false);
+  user_pref("network.prefetch-next", false);
+  user_pref("pdfjs.enabledCache.state", false);
+  user_pref("pdfjs.previousHandler.alwaysAskBeforeHandling", true);
+  user_pref("pdfjs.previousHandler.preferredAction", 4);
+  user_pref("privacy.donottrackheader.enabled", true);
+  user_pref("privacy.sanitize.pending", "[]");
+  user_pref("privacy.trackingprotection.enabled", true);
+  user_pref("privacy.trackingprotection.socialtracking.enabled", true);
+  user_pref("services.sync.engine.addresses.available", false);
+  user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+  user_pref("toolkit.telemetry.reportingpolicy.firstRun", false);
+#+end_src
+
+** Ad blocker configuration (~adblock.txt~)
+As reiterated above, this file is not actually automatically applied. It is meant for uBlock Origin. It is not exported because of its length. Suffice to say, it's pretty exhaustive.
+#+begin_src text :tangle (expand-file-name "adblock.txt" (getenv "FFDIR"))
+  {
+    "timeStamp": 1576571108014,
+    "version": "1.24.2",
+    "userSettings": {
+      "advancedUserEnabled": true,
+      "alwaysDetachLogger": true,
+      "autoUpdate": true,
+      "cloudStorageEnabled": false,
+      "collapseBlocked": true,
+      "colorBlindFriendly": false,
+      "contextMenuEnabled": true,
+      "dynamicFilteringEnabled": true,
+      "externalLists": "https://bitbucket.org/nicktabick/adblock-rules/raw/master/nt-adblock.txt\nhttps://dl.dropboxusercontent.com/s/1ybzw9lb7m1qiyl/AAs.txt\nhttps://easylist-downloads.adblockplus.org/adwarefilters.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-annoyance.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-social.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_full.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt\nhttps://easylist-downloads.adblockplus.org/message_seen_remover_for_facebook.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_other.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt\nhttps://fanboy.co.nz/enhancedstats.txt\nhttps://fanboy.co.nz/fanboy-cookiemonster.txt\nhttps://fanboy.co.nz/fanboy-problematic-sites.txt\nhttps://fanboy.co.nz/r/fanboy-complete.txt\nhttps://fanboy.co.nz/r/fanboy-ultimate.txt\nhttps://raw.githubusercontent.com/Akamaru/Adblock-Filterliste/master/filterlist.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareABP.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AncientLibrary/Facebook%20Privacy%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Android%20Scum%20Class%20—%20Fake%20notification%20counters.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AntiAmazonListForTwitch.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/BrowseWebsitesWithoutLoggingIn.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/I%20Don't%20Want%20to%20Download%20Your%20Browser.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/KnowYourMemePureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/SocialShareList.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/TwitchPureViewingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/WikiaPureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Antisocial.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Extreme-Measures.txt\nhttps://raw.githubusercontent.com/LordBadmintonofYorkshire/Overlay-Blocker/master/blocklist.txt\nhttps://raw.githubusercontent.com/Manu1400/i-don-t-care-about-gotoup-btns/master/list-gotoup-btns.txt\nhttps://raw.githubusercontent.com/NeeEoo/AdBlockNeeEoo/master/List.txt\nhttps://raw.githubusercontent.com/Rpsl/adblock-leadgenerator-list/master/list/list.txt\nhttps://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt\nhttps://raw.githubusercontent.com/bcye/Hello-Goodbye/master/filterlist.txt\nhttps://raw.githubusercontent.com/callmenemo491/DodgySiteBlocker/master/DodgySiteBlocker.txt\nhttps://raw.githubusercontent.com/cb-software/CB-Malicious-Domains/master/block_lists/adblock_plus.txt\nhttps://raw.githubusercontent.com/cpeterso/clickbait-blocklist/master/clickbait-blocklist.txt\nhttps://raw.githubusercontent.com/dariusworks/superblock/master/cleanersitesAiO.txt\nhttps://raw.githubusercontent.com/endolith/clickbait/master/clickbait.txt\nhttps://raw.githubusercontent.com/gasull/adblock-nsa/master/filters.txt\nhttps://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt\nhttps://raw.githubusercontent.com/jasonbarone/membership-app-block-list/master/membership-app-block-list.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-wikipedia/master/signed.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-youtube-ads/master/signed.txt\nhttps://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/i-dont-want-your-app.txt\nhttps://raw.githubusercontent.com/piperun/iploggerfilter/master/filterlist\nhttps://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt\nhttps://raw.githubusercontent.com/ryanbr/fanboy-adblock/master/fake-news.txt\nhttps://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/newsletter_filters.txt\nhttps://www.i-dont-care-about-cookies.eu/abp/\nhttps://filters.adtidy.org/extension/ublock/filters/1.txt",
+      "firewallPaneMinimized": false,
+      "hyperlinkAuditingDisabled": true,
+      "ignoreGenericCosmeticFilters": false,
+      "largeMediaSize": 50,
+      "parseAllABPHideFilters": true,
+      "prefetchingDisabled": true,
+      "requestLogMaxEntries": 1000,
+      "showIconBadge": true,
+      "tooltipsDisabled": false,
+      "webrtcIPAddressHidden": true
+    },
+    "selectedFilterLists": [
+      "https://filters.adtidy.org/extension/ublock/filters/1.txt",
+      "user-filters",
+      "ublock-filters",
+      "ublock-annoyances",
+      "ublock-badware",
+      "ublock-experimental",
+      "ublock-privacy",
+      "ublock-abuse",
+      "ublock-unbreak",
+      "awrl-0",
+      "adguard-generic",
+      "adguard-mobile",
+      "easylist",
+      "adguard-spyware",
+      "easyprivacy",
+      "fanboy-enhanced",
+      "disconnect-malvertising",
+      "malware-0",
+      "malware-1",
+      "spam404-0",
+      "adguard-annoyance",
+      "adguard-social",
+      "fanboy-thirdparty_social",
+      "fanboy-cookiemonster",
+      "fanboy-annoyance",
+      "fanboy-social",
+      "dpollock-0",
+      "hphosts",
+      "mvps-0",
+      "plowe-0",
+      "ara-0",
+      "BGR-0",
+      "CHN-1",
+      "CHN-0",
+      "CZE-0",
+      "DEU-0",
+      "EST-0",
+      "FIN-0",
+      "FRA-0",
+      "GRC-0",
+      "HUN-0",
+      "IDN-0",
+      "IRN-0",
+      "ISL-0",
+      "ISR-0",
+      "ITA-1",
+      "ITA-0",
+      "JPN-1",
+      "KOR-0",
+      "KOR-1",
+      "LTU-0",
+      "LVA-0",
+      "NLD-0",
+      "NOR-0",
+      "POL-0",
+      "POL-2",
+      "ROU-1",
+      "RUS-2",
+      "RUS-0",
+      "spa-1",
+      "spa-0",
+      "SVN-0",
+      "SWE-1",
+      "THA-0",
+      "TUR-0",
+      "VIE-1",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/KnowYourMemePureBrowsingExperience.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/WikiaPureBrowsingExperience.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/SocialShareList.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareABP.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/TwitchPureViewingExperience.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/AntiAmazonListForTwitch.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/I%20Don't%20Want%20to%20Download%20Your%20Browser.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Android%20Scum%20Class%20—%20Fake%20notification%20counters.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/BrowseWebsitesWithoutLoggingIn.txt",
+      "https://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt",
+      "https://raw.githubusercontent.com/gasull/adblock-nsa/master/filters.txt",
+      "https://raw.githubusercontent.com/kbinani/adblock-wikipedia/master/signed.txt",
+      "https://raw.githubusercontent.com/kbinani/adblock-youtube-ads/master/signed.txt",
+      "https://dl.dropboxusercontent.com/s/1ybzw9lb7m1qiyl/AAs.txt",
+      "https://easylist-downloads.adblockplus.org/adwarefilters.txt",
+      "https://raw.githubusercontent.com/Akamaru/Adblock-Filterliste/master/filterlist.txt",
+      "https://raw.githubusercontent.com/Hubird-au/Adversity/master/Antisocial.txt",
+      "https://raw.githubusercontent.com/dariusworks/superblock/master/cleanersitesAiO.txt",
+      "https://raw.githubusercontent.com/cb-software/CB-Malicious-Domains/master/block_lists/adblock_plus.txt",
+      "https://raw.githubusercontent.com/cpeterso/clickbait-blocklist/master/clickbait-blocklist.txt",
+      "https://raw.githubusercontent.com/endolith/clickbait/master/clickbait.txt",
+      "https://raw.githubusercontent.com/callmenemo491/DodgySiteBlocker/master/DodgySiteBlocker.txt",
+      "https://raw.githubusercontent.com/Hubird-au/Adversity/master/Extreme-Measures.txt",
+      "https://easylist-downloads.adblockplus.org/fb_annoyances_full.txt",
+      "https://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/AncientLibrary/Facebook%20Privacy%20List.txt",
+      "https://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt",
+      "https://raw.githubusercontent.com/ryanbr/fanboy-adblock/master/fake-news.txt",
+      "https://easylist-downloads.adblockplus.org/fanboy-annoyance.txt",
+      "https://fanboy.co.nz/fanboy-cookiemonster.txt",
+      "https://fanboy.co.nz/enhancedstats.txt",
+      "https://fanboy.co.nz/fanboy-problematic-sites.txt",
+      "https://easylist-downloads.adblockplus.org/fanboy-social.txt",
+      "https://fanboy.co.nz/r/fanboy-complete.txt",
+      "https://fanboy.co.nz/r/fanboy-ultimate.txt",
+      "https://raw.githubusercontent.com/bcye/Hello-Goodbye/master/filterlist.txt",
+      "https://www.i-dont-care-about-cookies.eu/abp/",
+      "https://raw.githubusercontent.com/Manu1400/i-don-t-care-about-gotoup-btns/master/list-gotoup-btns.txt",
+      "https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/i-dont-want-your-app.txt",
+      "https://raw.githubusercontent.com/Rpsl/adblock-leadgenerator-list/master/list/list.txt",
+      "https://raw.githubusercontent.com/jasonbarone/membership-app-block-list/master/membership-app-block-list.txt",
+      "https://easylist-downloads.adblockplus.org/message_seen_remover_for_facebook.txt",
+      "https://raw.githubusercontent.com/NeeEoo/AdBlockNeeEoo/master/List.txt",
+      "https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt",
+      "https://bitbucket.org/nicktabick/adblock-rules/raw/master/nt-adblock.txt",
+      "https://raw.githubusercontent.com/LordBadmintonofYorkshire/Overlay-Blocker/master/blocklist.txt",
+      "https://raw.githubusercontent.com/piperun/iploggerfilter/master/filterlist",
+      "https://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt",
+      "https://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/newsletter_filters.txt",
+      "https://easylist-downloads.adblockplus.org/yt_annoyances_other.txt",
+      "https://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt"
+    ],
+    "hiddenSettings": {
+      "allowGenericProceduralFilters": false,
+      "assetFetchTimeout": 30,
+      "autoCommentFilterTemplate": "{{date}} {{origin}}",
+      "autoUpdateAssetFetchPeriod": 120,
+      "autoUpdateDelayAfterLaunch": 180,
+      "autoUpdatePeriod": 7,
+      "blockingProfiles": "11111/#F00 11011/#C0F 11001/#00F 00001",
+      "cacheStorageAPI": "unset",
+      "cacheStorageCompression": true,
+      "cacheControlForFirefox1376932": "no-cache, no-store, must-revalidate",
+      "consoleLogLevel": "unset",
+      "debugScriptlets": false,
+      "debugScriptletInjector": false,
+      "disableWebAssembly": false,
+      "extensionUpdateForceReload": false,
+      "ignoreRedirectFilters": false,
+      "ignoreScriptInjectFilters": false,
+      "filterAuthorMode": false,
+      "loggerPopupType": "popup",
+      "manualUpdateAssetFetchPeriod": 500,
+      "popupFontSize": "unset",
+      "requestJournalProcessPeriod": 1000,
+      "selfieAfter": 3,
+      "strictBlockingBypassDuration": 120,
+      "suspendTabsUntilReady": "unset",
+      "updateAssetBypassBrowserCache": false,
+      "userResourcesLocation": "unset"
+    },
+    "whitelist": [
+      "about-scheme",
+      "annualcreditreport.transunion.com",
+      "chrome-extension-scheme",
+      "chrome-scheme",
+      "melpa.org",
+      "opera-scheme",
+      "vivaldi-scheme",
+      "www.netteller.com",
+      "wyciwyg-scheme"
+    ],
+    "netWhitelist": "about-scheme\nannualcreditreport.transunion.com\nchrome-extension-scheme\nchrome-scheme\nmelpa.org\nopera-scheme\nvivaldi-scheme\nwww.netteller.com\nwyciwyg-scheme",
+    "dynamicFilteringString": "",
+    "urlFilteringString": "",
+    "hostnameSwitchesString": "no-csp-reports: * true",
+    "userFilters": "! 7/29/2019 https://www.facebook.com\nwww.facebook.com##div.f_1j0s8guc1h.pagelet:nth-of-type(2) > ._1-ia > ._4-u8._20os._2tyk._1-ib._4-u2\n\n! 9/18/2019 https://www.youtube.com\nwww.youtube.com##ytd-button-renderer.size-default.style-default.force-icon-button.ytd-menu-renderer.style-scope:nth-of-type(1)\nwww.youtube.com##ytd-button-renderer.size-default.style-default.force-icon-button.ytd-menu-renderer.style-scope:nth-of-type(2)\n"
+  }
+#+end_src
