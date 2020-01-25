@@ -16,9 +16,9 @@
   - [[#making-the-proper-paths][Making the proper paths]]
   - [[#tangling-absolute-paths][Tangling absolute paths]]
 - [[#shell][Shell]]
-  - [[#on-login-zprofile][On login (=~/.zprofile=)]]
-  - [[#quiet-login-hushlogin][Quiet login (=~/.hushlogin=)]]
-  - [[#configuration-zshrc][Configuration (=~/.zshrc=)]]
+  - [[#on-login-homezprofile][On login (=$HOME/.zprofile=)]]
+  - [[#quiet-login-homehushlogin][Quiet login (=$HOME/.hushlogin=)]]
+  - [[#configuration-homezshrc][Configuration (=$HOME/.zshrc=)]]
 - [[#x-session][X session]]
   - [[#starting-exwm-x11xinitrc-emacs][Starting ~EXWM~ (=X11/xinitrc-emacs=)]]
   - [[#starting-twm-x11xinitrc-twm][Starting ~twm~ (=X11/xinitrc-twm=)]]
@@ -120,7 +120,7 @@ There are some fields which require absolute paths. This means I have to use som
 #+end_src
 
 * Shell
-** On login (=~/.zprofile=)
+** On login (=$HOME/.zprofile=)
    :properties:
    :header-args: :tangle (user-home-file ".zprofile")
    :end:
@@ -158,11 +158,11 @@ The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my b
 #+begin_src sh
   case $(tty | sed 's/\/dev\/tty//') in
       1) exec startx $XDG_CONFIG_HOME/X11/xinitrc-emacs &> /dev/null;;
-      2) exec startx $XDG_CONFIG_HOME/X11/xinitrc-twm;;
+      2) exec startx $XDG_CONFIG_HOME/X11/xinitrc-twm &> /dev/null;;
   esac
 #+end_src
 
-** Quiet login (=~/.hushlogin=)
+** Quiet login (=$HOME/.hushlogin=)
    :properties:
    :header-args: :tangle (user-home-file ".hushlogin")
    :end:
@@ -170,7 +170,7 @@ I don't need to know the last time I logged in, I'd rather the login process be 
 #+begin_src :exports none
 #+end_src
 
-** Configuration (=~/.zshrc=)
+** Configuration (=$HOME/.zshrc=)
    :properties:
    :header-args: :tangle (expand-file-name ".zshrc" (getenv "HOME"))
    :end:
