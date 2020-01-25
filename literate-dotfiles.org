@@ -16,23 +16,23 @@
   - [[#making-the-proper-paths][Making the proper paths]]
   - [[#tangling-absolute-paths][Tangling absolute paths]]
 - [[#shell][Shell]]
-  - [[#on-login-zprofile][On login (~~/.zprofile~)]]
-  - [[#quiet-login-hushlogin][Quiet login (~~/.hushlogin~)]]
-  - [[#configuration-zshrc][Configuration (~~/.zshrc~)]]
+  - [[#on-login-zprofile][On login (=~/.zprofile=)]]
+  - [[#quiet-login-hushlogin][Quiet login (=~/.hushlogin=)]]
+  - [[#configuration-zshrc][Configuration (=~/.zshrc=)]]
 - [[#x-session][X session]]
-  - [[#starting-exwm-x11xinitrc-emacs][Starting ~EXWM~ (~X11/xinitrc-emacs~)]]
-  - [[#starting-twm-x11xinitrc-twm][Starting ~twm~ (~X11/xinitrc-twm~)]]
-  - [[#configuring-urxvt-x11xresources][Configuring ~urxvt~ (~X11/xresources~)]]
-  - [[#configuring-twm-twmtwmrc][Configuring ~twm~ (~twm/twmrc~)]]
-  - [[#icons-in-twm-twmbitmaps][Icons in ~twm~ (~twm/bitmaps~)]]
-  - [[#status-bar-for-twm-twmconkyrc][Status bar for ~twm~ (~twm/conkyrc~)]]
-  - [[#gtk2-appearance-gtk-20gtkrc][GTK2 Appearance (~gtk-2.0/gtkrc~)]]
-  - [[#gtk3-appearance-gtk-30settingsini][GTK3 appearance (~gtk-3.0/settings.ini~)]]
-- [[#music-player-mpdmpdconf][Music player (~mpd/mpd.conf~)]]
+  - [[#starting-exwm-x11xinitrc-emacs][Starting ~EXWM~ (=X11/xinitrc-emacs=)]]
+  - [[#starting-twm-x11xinitrc-twm][Starting ~twm~ (=X11/xinitrc-twm=)]]
+  - [[#configuring-urxvt-x11xresources][Configuring ~urxvt~ (=X11/xresources=)]]
+  - [[#configuring-twm-twmtwmrc][Configuring ~twm~ (=twm/twmrc=)]]
+  - [[#icons-in-twm-twmbitmaps][Icons in ~twm~ (=twm/bitmaps=)]]
+  - [[#status-bar-for-twm-twmconkyrc][Status bar for ~twm~ (=twm/conkyrc=)]]
+  - [[#gtk2-appearance-gtk-20gtkrc][GTK2 Appearance (=gtk-2.0/gtkrc=)]]
+  - [[#gtk3-appearance-gtk-30settingsini][GTK3 appearance (=gtk-3.0/settings.ini=)]]
+- [[#music-player-mpdmpdconf][Music player (=mpd/mpd.conf=)]]
 - [[#web-browser-firefox][Web browser (Firefox)]]
-  - [[#disabling-tabs-chromeuserchromecss][Disabling tabs (~chrome/userChrome.css~)]]
-  - [[#respecting-additional-settings-userjs][Respecting additional settings (~user.js~)]]
-  - [[#ad-blocker-configuration-adblocktxt][Ad blocker configuration (~adblock.txt~)]]
+  - [[#disabling-tabs-chromeuserchromecss][Disabling tabs (=chrome/userChrome.css=)]]
+  - [[#respecting-additional-settings-userjs][Respecting additional settings (=user.js=)]]
+  - [[#ad-blocker-configuration-adblocktxt][Ad blocker configuration (=adblock.txt=)]]
 #+END_QUOTE
 
 * About this configuration
@@ -118,7 +118,7 @@ There are some fields which require absolute paths. This means I have to use som
 #+end_src
 
 * Shell
-** On login (~~/.zprofile~)
+** On login (=~/.zprofile=)
    :properties:
    :header-args: :tangle (user-home-file ".zprofile")
    :end:
@@ -160,7 +160,7 @@ The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my b
   esac
 #+end_src
 
-** Quiet login (~~/.hushlogin~)
+** Quiet login (=~/.hushlogin=)
    :properties:
    :header-args: :tangle (user-home-file ".hushlogin")
    :end:
@@ -168,7 +168,7 @@ I don't need to know the last time I logged in, I'd rather the login process be 
 #+begin_src :exports none
 #+end_src
 
-** Configuration (~~/.zshrc~)
+** Configuration (=~/.zshrc=)
    :properties:
    :header-args: :tangle (expand-file-name ".zshrc" (getenv "HOME"))
    :end:
@@ -464,7 +464,7 @@ This is just a point of personal aesthetic preference. I like having some kind o
 #+end_src
 
 * X session
-** Starting ~EXWM~ (~X11/xinitrc-emacs~)
+** Starting ~EXWM~ (=X11/xinitrc-emacs=)
   :properties:
   :header-args: :tangle (user-config-file "X11/xinitrc-emacs")
   :end:
@@ -504,7 +504,7 @@ In this case, we start Emacs.
   exec emacs $_EMACS_DUMP_FILE
 #+end_src
 
-** Starting ~twm~ (~X11/xinitrc-twm~)
+** Starting ~twm~ (=X11/xinitrc-twm=)
    :properties:
    :header-args: :tangle (user-config-file "X11/xinitrc-twm")
    :end:
@@ -589,7 +589,7 @@ Since ~twm~ doesn't come with any kind of status indicators, I need to make one 
   exec twm -f $XDG_CONFIG_HOME/twm/twmrc
 #+end_src
 
-** Configuring ~urxvt~ (~X11/xresources~)
+** Configuring ~urxvt~ (=X11/xresources=)
    :properties:
    :header-args: :tangle (user-config-file "X11/xresources")
    :end:
@@ -627,7 +627,7 @@ This is basically just Dracula.
   URxvt*color15:    #E6E6E6
 #+end_src
 
-** Configuring ~twm~ (~twm/twmrc~)
+** Configuring ~twm~ (=twm/twmrc=)
    :properties:
    :header-args: :tangle (user-config-file "twm/twmrc")
    :end:
@@ -886,7 +886,7 @@ The block can be closed off here.
   }
 #+end_src
 
-** Icons in ~twm~ (~twm/bitmaps~)
+** Icons in ~twm~ (=twm/bitmaps=)
 Incidentally, X bitmaps are plain text, so they can be tangled instead of needing to be included in my git repository.
 
 *** Menu
@@ -926,7 +926,7 @@ Incidentally, X bitmaps are plain text, so they can be tangled instead of needin
   };
 #+end_src
 
-** Status bar for ~twm~ (~twm/conkyrc~)
+** Status bar for ~twm~ (=twm/conkyrc=)
    :properties:
    :header-args: :tangle (user-config-file "twm/conkyrc")
    :end:
@@ -996,7 +996,7 @@ With that, this block can be closed.
   ]]
 #+end_src
 
-** GTK2 Appearance (~gtk-2.0/gtkrc~)
+** GTK2 Appearance (=gtk-2.0/gtkrc=)
    :properties:
    :header-args: :tangle (user-config-file "gtk-2.0/gtkrc")
    :end:
@@ -1019,7 +1019,7 @@ These settings apply the theme, cursor, and icons I prefer, along with other pre
   gtk-xft-rgba="rgb"
 #+end_src
 
-** GTK3 appearance (~gtk-3.0/settings.ini~)
+** GTK3 appearance (=gtk-3.0/settings.ini=)
    :properties:
    :header-args: :tangle (user-config-file "gtk-3.0/settings.ini")
    :end:
@@ -1043,7 +1043,7 @@ This is the exact same settings as seen in [[#gtk2-appearance-gtkrc][GTK2's conf
   gtk-xft-rgba=rgb
 #+end_src
 
-* Music player (~mpd/mpd.conf~)
+* Music player (=mpd/mpd.conf=)
   :properties:
   :header-args: :tangle (user-config-file "mpd/mpd.conf")
   :end:
@@ -1084,13 +1084,13 @@ Much human intervention is still required of this part of the configuration:
 - Configuration of the ad blocker is not automatic.
 - Some website specific settings cannot be set here.
 
-** Disabling tabs (~chrome/userChrome.css~)
+** Disabling tabs (=chrome/userChrome.css=)
 Since Emacs manages my windows as buffers, it makes no sense to have multiple tabs per single buffer. Part of this involves removing the tab bar.
 #+begin_src css :tangle (expand-file-name "chrome/userChrome.css" (getenv "FFDIR"))
   #TabsToolbar { visibility: collapse !important; }
 #+end_src
 
-** Respecting additional settings (~user.js~)
+** Respecting additional settings (=user.js=)
 Since I change a lot of settings, I just spill this verbatim. It's not actually shown because it's not all that special.
 #+begin_src js :exports none :tangle (expand-file-name "user.js" (getenv "FFDIR"))
   user_pref("app.shield.optoutstudies.enabled", true);
@@ -1157,7 +1157,7 @@ Since I change a lot of settings, I just spill this verbatim. It's not actually 
   user_pref("toolkit.telemetry.reportingpolicy.firstRun", false);
 #+end_src
 
-** Ad blocker configuration (~adblock.txt~)
+** Ad blocker configuration (=adblock.txt=)
 As reiterated above, this file is not actually automatically applied. It is meant for uBlock Origin. It is not exported because of its length. Suffice to say, it's pretty exhaustive.
 #+begin_src text :tangle (expand-file-name "adblock.txt" (getenv "FFDIR"))
   {
