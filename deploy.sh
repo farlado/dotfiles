@@ -7,33 +7,29 @@ sudo echo > /dev/null
 echo Setting an important variable...
 export XDG_CONFIG_HOME="$HOME/.config"
 
+# If it's a ThinkPad, we might need to do more.
 echo Checking whether this system is a ThinkPad...
 isThinkPad="$(grep ThinkPad /sys/devices/virtual/dmi/id/product_version)"
-# If it's a ThinkPad, we might need to do more...
 
 echo Updating repositories and installing git...
-sudo pacman --needed -Syu git
+sudo pacman --noconfirm --needed -Syu git
 
-echo Configuring the dotfiles repository and submodules...
-cd $XDG_CONFIG_HOME
-git submodule sync
-git submodule update --init --checkout --recursive
-git config --local status.showUntrackedFiles no
+echo Installing yay...
+git clone https://aur.archlinux.org/yay /tmp/yay
+cd /tmp/yay
+makepkg -si --noconfirm
 
-for pkg in emacs-git yay; do
-    if ! pacman -Q | grep $pkg; then
-        echo Installing $pkg...
-        cd $XDG_CONFIG_HOME/deploy/$pkg
-        makepkg -si --noconfirm
-        rm -rf pkg src $pkg*
-    fi
-done
+echo Installing Emacs...
+cd $XDG_CONFIG_HOME/dotfiles/emacs-git
+makepkg -si --noconfirm
+rm -rf pkg src emacs-git*
 
 echo Installing packages...
 # If this is a ThinkPad, we need to set up the fan control software
 [ "$isThinkPad" ] && {
     sys="gcc make cmake thinkfan simple-mtpfs ntfs-3g haveged tlp tlp-rdw intel-ucode"
 } || sys="gcc make cmake simple-mtpfs ntfs-3g haveged tlp tlp-rdw intel-ucode"
+shells="zsh dash"
 audio="pulseaudio pulseaudio-bluetooth pulseaudio-alsa alsa-utils"
 net="bluez bluez-utils networkmanager curl wget"
 emacs="ghostscript aspell aspell-en texlive-most"
@@ -45,7 +41,7 @@ apps="firefox libreoffice-fresh musescore gimp telegram-desktop-bin discord mpv 
 games="vulkan-intel mesa steam xonotic"
 dev="python python-pylint python-jedi hy stack sbcl"
 etc="ufetch zip unzip libtool ebook-tools mpd mpc"
-yay --needed -Sy $sys $audio $net $emacs $wm $de $looks $fonts $apps $games $dev $etc
+yay --noconfirm --needed -Sy $sys $shells $audio $net $emacs $wm $de $looks $fonts $apps $games $dev $etc
 
 echo Configuring Haskell development environment...
 cd $HOME
@@ -60,20 +56,31 @@ for service in $services; do
 done
 
 echo Generating boot image...
-sudo cp $XDG_CONFIG_HOME/deploy/loader.conf /boot/loader/loader.conf
-sudo cp $XDG_CONFIG_HOME/deploy/arch.conf /boot/loader/entries/arch.conf
+sudo cp $XDG_CONFIG_HOME/dotfiles/deploy/loader.conf /boot/loader/loader.conf
+sudo cp $XDG_CONFIG_HOME/dotfiles/deploy/arch.conf /boot/loader/entries/arch.conf
 sudo mkinitcpio -p linux
 
-echo Installing and configuring shells, we may need your password...
-yay --needed -S zsh dash
+echo Configuring shells, we may need your password...
 sudo ln -sf dash /bin/sh
 chsh -s /bin/zsh $USER
 
+echo Grabbing a zsh module...
+git clone https://github.com/zsh-users/zsh-syntax-highlighting $XDG_CONFIG_HOME/zsh/zsh-syntax-highlighting
+
+echo Cloning Emacs configuration...
+git clone https://github.com/farlado/dotemacs $XDG_CONFIG_HOME/emacs
+
 echo Tangling dotfiles...
-cd $XDG_CONFIG_HOME
-emacs --eval '(progn (org-babel-tangle-file "literate-dotfiles.org") (kill-emacs))'
+cd $XDG_CONFIG_HOME/dotfiles
+emacs --batch \
+      --eval "(require 'org)" \
+      --eval "(setq org-confirm-babel-evaluate nil)" \
+      --eval "(defmacro user-emacs-file (file) (expand-file-name file user-emacs-directory))" \
+      --eval "(defmacro user-home-file (file) (expand-file-name file (getenv \"HOME\")))" \
+      --eval "(defmacro user-config-file (file) (expand-file-name file  (getenv \"XDG_CONFIG_HOME\")))" \
+      --eval '(org-babel-tangle-file "literate-dotfiles.org")'
 
 echo Generating dump image for Emacs...
 emacs --batch -q -l $XDG_CONFIG_HOME/emacs/lisp/pdumper.el
 
-echo Everything /should/ be set up now...
+echo You will have to now open Emacs and enter: \`C-c C-M-e C-c C-v t\`

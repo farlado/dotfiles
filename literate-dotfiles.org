@@ -51,7 +51,7 @@ This repository is still very much a hybrid of literate files and files that ver
 From a command line, this should look like:
 #+begin_src sh
   $ git clone https://github.com/farlado/dotfiles $HOME/.config/dotfiles
-  $ $HOME/.config/deploy/deploy.sh
+  $ $HOME/.config/dotfiles/deploy.sh
 #+end_src
 
 ** License
@@ -1132,12 +1132,9 @@ Since I change a lot of settings, I just spill this verbatim. It's not actually 
   user_pref("extensions.pendingOperations", false);
   user_pref("extensions.systemAddonSet", "{\"schema\":1,\"addons\":{}}");
   user_pref("extensions.ui.dictionary.hidden", true);
-  user_pref("extensions.ui.lastCategory", "addons://list/extension");
   user_pref("extensions.ui.locale.hidden", true);
   user_pref("extensions.webcompat.perform_injections", true);
   user_pref("extensions.webcompat.perform_ua_overrides", true);
-  user_pref("font.name.serif.x-western", "Iosevka");
-  user_pref("font.size.variable.x-western", 10);
   user_pref("general.smoothScroll", false);
   user_pref("media.peerconnection.ice.default_address_only", true);
   user_pref("media.peerconnection.ice.no_host", true);
