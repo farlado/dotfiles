@@ -94,8 +94,7 @@ In order for tangling to work, the proper paths have to be present. This is done
                    "chrome"
                    (car (file-expand-wildcards
                          (concat (getenv "HOME")
-                                 "/.mozilla/firefox/*.default-release"))))
-                  t)
+                                 "/.mozilla/firefox/*.default-release")))) t)
   (setenv "FFDIR" (car (file-expand-wildcards
                         (concat (getenv "HOME")
                                 "/.mozilla/firefox/*.default-release"))))
