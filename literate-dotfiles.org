@@ -90,12 +90,12 @@ In order for tangling to work, the proper paths have to be present. This is done
     (make-directory (expand-file-name directory (getenv "HOME")) t))
 
   (shell-command "sleep 2 && killall firefox & firefox")
-  (ignore-error
-      (make-directory (expand-file-name
-                       "chrome"
-                       (car (file-expand-wildcards
-                             (concat (getenv "HOME")
-                                     "/.mozilla/firefox/*.default-release")))) t))
+  (make-directory (expand-file-name
+                   "chrome"
+                   (car (file-expand-wildcards
+                         (concat (getenv "HOME")
+                                 "/.mozilla/firefox/*.default-release"))))
+                  t)
   (setenv "FFDIR" (car (file-expand-wildcards
                         (concat (getenv "HOME")
                                 "/.mozilla/firefox/*.default-release"))))
