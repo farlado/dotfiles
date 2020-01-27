@@ -131,6 +131,9 @@ The XDG Base Directory Specification is meant to define where to store configura
   export XDG_BIN_HOME="$HOME/.local/bin"
   export XDG_LIB_HOME="$HOME/.local/lib"
   export XDG_CACHE_HOME="$HOME/.cache"
+
+  export GNUPGHOME="$XDG_CONFIG_HOME/gnupg"
+  export ICEAUTHORITY="$XDG_CONFIG_HOME/ICEauthority"
 #+end_src
 
 *** Find an Emacs dump image if exists
