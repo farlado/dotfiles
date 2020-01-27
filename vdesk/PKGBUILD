@@ -1,0 +1,23 @@
+# Farlado's vdesk PKGBUILD -*- mode: sh -*-
+
+pkgname=vdesk
+pkgver=1.2
+pkgrel=1
+pkgdesc="Virtual desktop management"
+arch=('x86_64')
+url="http://offog.org/code/vdesk/"
+depends=('xorgproto')
+source=(https://offog.org/files/$pkgname-$pkgver.tar.gz)
+options=(!strip)
+sha1sums=('SKIP')
+
+build() {
+    cd "$srcdir"/$pkgname-$pkgver
+    ./configure
+    make
+}
+
+package() {
+    cd "$srcdir"/$pkgname-$pkgver
+    make DESTDIR="$pkgdir/" install
+}

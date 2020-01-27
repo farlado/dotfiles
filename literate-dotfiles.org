@@ -696,6 +696,7 @@ Icons are the way windows minimize. There is also an icon manager, which is conf
 - =Button1= = =twmops= menu
 #+begin_src conf-space
   Button1 = : root : f.menu "twmops"
+  Button3 = : root : f.menu "vdeskops"
 #+end_src
 
 **** On the titlebar
@@ -743,6 +744,24 @@ This menu is mainly supposed to concern things specifically related to ~twm~ or 
       "Sleep"     !"systemctl suspend -i &"
       "Reboot"    !"restart"
       "Shut down" !"shutdown now"
+  }
+#+end_src
+
+**** =vdeskops=
+Using ~vdesk~, I can manage multiple virtual desktops. This menu is bound to the right mouse on root window.
+#+begin_src conf-space
+  menu "vdeskops" {
+       "vdesk" f.title
+       "1"  !"vdesk 1"
+       "2"  !"vdesk 2"
+       "3"  !"vdesk 3"
+       "4"  !"vdesk 4"
+       "5"  !"vdesk 5"
+       "6"  !"vdesk 6"
+       "7"  !"vdesk 7"
+       "8"  !"vdesk 8"
+       "9"  !"vdesk 9"
+       "10" !"vdesk 10"
   }
 #+end_src
 
@@ -917,6 +936,7 @@ With that, this block can be closed.
 - Time and date
 #+begin_src conf
   conky.text = [[
+  vdesk: ${exec vdesk} | \
   Brightness: ${exec brightnessctl i | grep % | sed -r 's/.*\(([0-9]+%).*/\1/'} | \
   Volume: ${exec amixer get Master | grep Left: | sed -r 's/.*\[(.*%).*/\1/'}\
   ${exec [ "$(amixer get Master | grep off)" ] && echo " (Muted)" } | \
