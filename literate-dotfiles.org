@@ -503,6 +503,12 @@ I don't really use the trackpad, so there's no point in keeping it enabled. I al
   setxkbmap us -option ctrl:nocaps
 #+end_src
 
+*** Disable screen blanking
+This is so annoying and I don't want it to happen.
+#+begin_src sh
+  xset s off -dpms
+#+end_src
+
 *** Music player variables
 I set these here so I don't have to worry about them later.
 #+begin_src sh
