@@ -1,4 +1,4 @@
-#+title: Farlado's Illiterate Dotfiles
+#+title: Farlado's Illiterate Dotfiles for EXWM
 #+subtitle: A far-from-sane literate dotfiles configuration
 #+author: Farlado
 #+startup: hideblocks
@@ -10,6 +10,7 @@
 - [[#about-this-configuration][About this configuration]]
   - [[#benefits][Benefits]]
   - [[#limitations][Limitations]]
+  - [[#about-this-branch][About this branch]]
   - [[#installation][Installation]]
   - [[#license][License]]
 - [[#on-tangle][On tangle]]
@@ -20,12 +21,7 @@
   - [[#quiet-login-homehushlogin][Quiet login (=$HOME/.hushlogin=)]]
   - [[#configuration-homezshrc][Configuration (=$HOME/.zshrc=)]]
 - [[#x-session][X session]]
-  - [[#starting-exwm-x11xinitrc-emacs][Starting ~EXWM~ (=X11/xinitrc-emacs=)]]
-  - [[#starting-twm-x11xinitrc-twm][Starting ~twm~ (=X11/xinitrc-twm=)]]
-  - [[#configuring-urxvt-x11xresources][Configuring ~urxvt~ (=X11/xresources=)]]
-  - [[#configuring-twm-twmtwmrc][Configuring ~twm~ (=twm/twmrc=)]]
-  - [[#icons-in-twm-twmbitmaps][Icons in ~twm~ (=twm/bitmaps=)]]
-  - [[#status-bar-for-twm-twmconkyrc][Status bar for ~twm~ (=twm/conkyrc=)]]
+  - [[#starting-x-x11xinitrc][Starting X (=X11/xinitrc=)]]
   - [[#gtk2-appearance-gtk-20gtkrc][GTK2 Appearance (=gtk-2.0/gtkrc=)]]
   - [[#gtk3-appearance-gtk-30settingsini][GTK3 appearance (=gtk-3.0/settings.ini=)]]
 - [[#music-player-mpdmpdconf][Music player (=mpd/mpd.conf=)]]
@@ -44,6 +40,9 @@ Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME= 
 ** Limitations
 This repository is still very much a hybrid of literate files and files that very much are not literate. However, it should be possible, so long as these files are placed into the right directories, to end up with a working desktop environment. I also do a lot of system configuration, but it's done in a [[file:literate-sysconfig.org][different file]].
 
+** About this branch
+Because of the fact I am starting to maintain multiple rices, I now place each one in its own unique repository. The one I use daily will remain the primary branch, but other branches will be created as I give multiple desktop environments and window managers their chances to impress me. Currently the tried and true window manager for me is EXWM, which enables me to turn Emacs into a fully-featured X desktop environment, not just a window manager. Peak comfy.
+
 ** Installation
 1. Clone the repository into its own directory (I personally use =$HOME/.config/dotfiles=)
 2. Run the deploy script within
@@ -56,7 +55,7 @@ From a command line, this should look like:
 
 ** License
 Because I +am a lazy piece of shit who doesn't like long licenses+ do not think much harm could come from using a pushover license for dotfiles, I am publishing this literate Emacs configuration under the WTFPL.
-#+begin_src text :tangle (user-config-file "LICENSE")
+#+begin_src text :tangle (user-config-file "dotfiles/LICENSE")
   DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
   Version 2, December 2004
 
@@ -82,8 +81,7 @@ In order for tangling to work, the proper paths have to be present. This is done
                        ".config/X11"
                        ".config/gtk-2.0"
                        ".config/gtk-3.0"
-                       ".local/share/zsh"
-                       ".config/twm/bitmaps"))
+                       ".local/share/zsh"))
     (make-directory (expand-file-name directory (getenv "HOME")) t))
 
   (shell-command "sleep 2 && killall firefox & firefox")
@@ -153,12 +151,10 @@ The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my b
 #+end_src
 
 *** Login behavior
-- On =tty1=, start [[#starting-exwm-xinitrc-emacs][EXWM]].
-- On =tty2=, start [[#starting-twm-xinitrc-twm][twm]].
+On =tty1=, start X. Otherwise, just move on to the shell.
 #+begin_src sh
   case $(tty | sed 's/\/dev\/tty//') in
       1) exec startx $XDG_CONFIG_HOME/X11/xinitrc-emacs &> /dev/null;;
-      2) exec startx $XDG_CONFIG_HOME/X11/xinitrc-twm &> /dev/null;;
   esac
 #+end_src
 
@@ -466,9 +462,9 @@ This is just a point of personal aesthetic preference. I like having some kind o
 #+end_src
 
 * X session
-** Starting ~EXWM~ (=X11/xinitrc-emacs=)
+** Starting X (=X11/xinitrc=)
   :properties:
-  :header-args: :tangle (user-config-file "X11/xinitrc-emacs")
+  :header-args: :tangle (user-config-file "X11/xinitrc")
   :end:
 Emacs is my daily-driver desktop. This file is relatively minimal since most configuration is done in Emacs itself.
 
@@ -504,498 +500,6 @@ This makes Emacs startup look a lot more consistent.
 In this case, we start Emacs.
 #+begin_src sh
   exec emacs $_EMACS_DUMP_FILE
-#+end_src
-
-** Starting ~twm~ (=X11/xinitrc-twm=)
-   :properties:
-   :header-args: :tangle (user-config-file "X11/xinitrc-twm")
-   :end:
-This is just for funsies. I like ~twm~ even though I'll never truly be able to "live" in it.
-
-*** Force 1080p on my W541
-Because I limit the resolution to 1080p but my W541 wants to display 3K, I need to force it. The displays I dock to also need configuration.
-#+begin_src sh
-  xrandr | grep 'DP2-1 connected' 1> /dev/null 2>/dev/null && {
-      xrandr --output eDP1 --off \
-             --output DP2-1 --mode 1920x1080 --rotate left --pos 0x0 \
-             --output DP2-2 --primary --rate 75 --mode 1920x1080 --pos 1080x0 \
-             --output DP2-3 --mode 1920x1080 --rotate right --pos 3000x0
-  } || {
-      xrandr --output eDP1 --primary --mode 1920x1080 --pos 0x0 \
-             --output DP2-1 --off \
-             --output DP2-2 --off \
-             --output DP2-3 --off
-  }
-#+end_src
-
-*** Manage mouse and keyboard
-I don't really use the trackpad, so there's no point in keeping it enabled. I also need to configure my trackball. Lastly, turn caps lock into another control key.
-#+begin_src sh
-  xinput disable $(xinput | grep Synap | head -n 1 | sed -r 's/.*id=([0-9]+).*/\1/')
-
-  tb=$(xinput | grep ELECOM | head -n 1 | sed -r 's/.*id=([0-9]+).*/\1/')
-  xinput set-prop $tb 'libinput Button Scrolling Button' 10
-  xinput set-prop $tb 'libinput Scroll Method Enabled' 0 0 1
-  xinput set-button-map $tb 1 2 3 4 5 6 7 8 9 2 1 2
-
-  setxkbmap us -option ctrl:nocaps
-#+end_src
-
-*** Start a compositor
-I don't need it for too much, it just makes things a little nicer.
-#+begin_src sh
-  xcompmgr -f -D 5 &
-#+end_src
-
-*** Qt/GTK uniformity
-This annoyed me. Thankfully there's a fix to it.
-#+begin_src sh
-  export QT_QPA_PLATFORMTHEME=gtk2
-#+end_src
-
-*** XDG Compliance
-Currently only GTK2 is here, but as I keep on working on it I'll eventually get to a dotfiles setup that has as few configuration files outside of =$XDG_CONFIG_HOME= as possible.
-#+begin_src sh
-  export WM="twm"
-  export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
-#+end_src
-
-*** Set wallpaper
-I'm not entirely tacky.
-#+begin_src sh
-  if [ -f $XDG_CONFIG_HOME/.wallpaper.png ]; then
-      feh --no-fehbg --bg-fill $XDG_CONFIG_HOME/.wallpaper.png
-  fi
-#+end_src
-
-*** X resources
-I source =$XDG_CONIFG_HOME/X11/xresources= for configuration of ~urxvt~, my terminal of choice.
-#+begin_src sh
-  xrdb -merge $XDG_CONFIG_HOME/X11/xresources
-#+end_src
-
-*** Fix cursor
-An annoyance that it doesn't look correct right away...
-#+begin_src sh
-  xsetroot -cursor_name left_ptr
-#+end_src
-
-*** Status bar
-Since ~twm~ doesn't come with any kind of status indicators, I need to make one for myself and it's started here, placed right above my icon manager. Incidentally, this makes the top right corner bear some resemblance to the BeOS Tracker.
-#+begin_src sh
-  conky -c $XDG_CONFIG_HOME/twm/conkyrc
-#+end_src
-
-*** Start ~twm~
-#+begin_src sh
-  exec twm -f $XDG_CONFIG_HOME/twm/twmrc
-#+end_src
-
-** Configuring ~urxvt~ (=X11/xresources=)
-   :properties:
-   :header-args: :tangle (user-config-file "X11/xresources")
-   :end:
-I don't like using Emacs as a terminal when I'm in a non-Emacs desktop environment. It just doesn't make sense.
-
-*** Font/Scrollbar
-Of course I want to use the same font across all my applications. Also I have no need for a scroll bar.
-#+begin_src conf-xdefaults :noweb yes
-  URxvt*geometry: 80x24
-  URxvt*font: xft:Iosevka:size=10
-  URxvt*scrollBar: False
-#+end_src
-
-*** Colors
-This is basically just Dracula.
-#+begin_src conf-xdefaults
-  ! Dracula Xresources palette
-  URxvt*foreground: #F8F8F2
-  URxvt*background: #282a36
-  URxvt*color0:     #000000
-  URxvt*color8:     #4D4D4D
-  URxvt*color1:     #FF5555
-  URxvt*color9:     #FF6E67
-  URxvt*color2:     #50FA7B
-  URxvt*color10:    #5AF78E
-  URxvt*color3:     #F1FA8C
-  URxvt*color11:    #F4F99D
-  URxvt*color4:     #BD93F9
-  URxvt*color12:    #CAA9FA
-  URxvt*color5:     #FF79C6
-  URxvt*color13:    #FF92D0
-  URxvt*color6:     #8BE9FD
-  URxvt*color14:    #9AEDFE
-  URxvt*color7:     #BFBFBF
-  URxvt*color15:    #E6E6E6
-#+end_src
-
-** Configuring ~twm~ (=twm/twmrc=)
-   :properties:
-   :header-args: :tangle (user-config-file "twm/twmrc")
-   :end:
-I decided for funsies to start my own ~twm~ configuration. Honestly I kinda like this window manager, even if I can't really "live" in it.
-
-*** Font
-The default font looks okay, but.......
-#+begin_src conf-space :noweb yes
-  MenuFont "*gohu*14*"
-  IconFont "*gohu*14*"
-  TitleFont "*gohu*14*"
-  ResizeFont "*gohu*14*"
-  IconManagerFont "*gohu*14*"
-#+end_src
-
-*** System
-**** Settings
-- Don't use defaults
-- Don't grab the server on menus
-- Decorate "transient" windows
-- Ignore extraneous events
-#+begin_src conf-space
-  NoDefaults
-  NoGrabServer
-  DecorateTransients
-  DefaultFunction f.nop
-#+end_src
-
-**** Functions
-Movement-based actions are defined here.
-- Immediately allow movement of a window.
-- Raise/lower/iconify when moving.
-- Lower when resizing.
-- Deiconify and raise.
-#+begin_src conf-space
-  MoveDelta 1
-  Function "move-or-raise"       { f.move f.deltastop f.raise }
-  Function "move-or-lower"       { f.move f.deltastop f.lower }
-  Function "move-or-iconify"     { f.move f.deltastop f.iconify }
-
-  Function "resize-or-lower"     { f.resize f.deltastop f.lower }
-
-  Function "deiconify-and-raise" { f.deiconify f.raise }
-#+end_src
-
-*** Windows
-**** General
-- Move/resize windows, not just outlines.
-- Repaint instead of saving window state.
-- Don't raise on resize/move/deiconify.
-- Accept window size hints.
-- Allow relative resize from all regions.
-#+begin_src conf-space
-  OpaqueMove
-  OpaqueResize
-  NoSaveUnders
-  NoRaiseOnMove
-  NoRaiseOnResize
-  NoRaiseOnDeiconify
-  AutoRelativeResize
-  UsePPosition "on"
-#+end_src
-
-**** Title bars
-For some reason, the default ~twm~ title bars are configured in a way that is an /ABSOLUTE EYESORE/. A little bit of the BeOS aesthetic fixes this up right away.
-#+begin_src conf-space
-  NoTitleHighlight
-  NoHighlight
-  SqueezeTitle
-#+end_src
-
-**** Title buttons
-I personally like having a close button, a maximize button, and a minimize button on every window. Why wouldn't you include those? On the right side is a menu. I don't want them to be smaller, and I don't want them to have borders.
-#+begin_src conf-space
-  IconDirectory "~/.config/twm/bitmaps"
-
-  LeftTitleButton "close" = f.delete
-  LeftTitleButton "maximize" = f.fullzoom
-  LeftTitleButton "minimize" = f.iconify
-  RightTitleButton "menu" = f.menu "windowmenu"
-  ButtonIndent 0
-  TitleButtonBorderWidth 0
-#+end_src
-
-**** Border settings
-These make borders marginally better to look at. We also remove shadows from menus here.
-#+begin_src conf-space
-  BorderWidth 3
-  FramePadding 1
-  TitlePadding 3
-  MenuBorderWidth 2
-#+end_src
-
-**** Windows without a title
-These windows should not have a title.
-#+begin_src conf-space
-  NoTitle {
-      "TWM Icon Manager"
-      "conky (eternity)"
-      "conky (navi)"
-  }
-#+end_src
-
-*** Icon Manager
-Icons are the way windows minimize. There is also an icon manager, which is configured in this section. The icon manager should be present at startup, living in the top right corner of my screen. Icons themselves shouldn't show up, rather windows should be minimized fully. The clock next to it should never show up, and the icon manager itself should automatically rise when it's focused. It also shouldn't move around.
-#+begin_src conf-space
-  ShowIconManager
-  SortIconManager
-  NoCaseSensitive
-  IconifyByUnmapping
-  IconManagerGeometry "=171x10-0+20" 1
-  IconManagerDontShow {
-      "conky (navi)"
-      "conky (eternity)"
-      "TWM Icon Manager"
-  }
-  AutoRaise { "TWM Icon Manager" }
-#+end_src
-
-*** Key bindings
-- =F11= = Fullscreen toggle
-- =Alt= + =Tab= = Warp to Icon Manager
-#+begin_src conf-space
-  "F11" =   : all : f.fullzoom
-  "Tab" = m : all : f.warpto "TWM Icon Manager"
-#+end_src
-
-*** Mouse bindings
-**** On the icon manager
-- =Button1= = =deiconify-and-raise=
-- =Button2= = Toggle iconify
-- =Button3= = Lower window
-#+begin_src conf-space
-  Button1 = : iconmgr : f.function "deiconify-and-raise"
-  Button2 = : iconmgr : f.iconify
-  Button3 = : iconmgr : f.lower
-#+end_src
-
-**** On the root window
-- =Button1= = =twmops= menu
-#+begin_src conf-space
-  Button1 = : root : f.menu "twmops"
-#+end_src
-
-**** On the titlebar
-- =Button1= = =move-or-raise=
-- =Button2= = =move-or-iconify=
-- =Button3= = =move-or-lower=
-#+begin_src conf-space
-  Button1 = : title | icon : f.function "move-or-raise"
-  Button2 = : title | icon : f.function "move-or-iconify"
-  Button3 = : title | icon : f.function "move-or-lower"
-#+end_src
-
-**** On a window
-- =Button1= + =Alt= = =move-or-raise=
-- =Button2= + =Alt= = =move-or-iconify=
-- =Button3= + =Alt= = =resize-or-lower=
-#+begin_src conf-space
-  Button1 = m : window | icon : f.function "move-or-raise"
-  Button2 = m : window | icon : f.function "move-or-iconify"
-  Button3 = m : window | icon : f.function "resize-or-lower"
-#+end_src
-
-*** Menu setup
-Since ~twm~ seems to rely quite a bit on the mouse, of course it involves menus.
-
-**** =twmops=
-This menu is mainly supposed to concern things specifically related to ~twm~ or launching windows. Exiting is put in its own sub-menu.
-#+begin_src conf-space
-  menu "twmops" {
-      "twm" f.title
-      "Run..." !"rofi -show run &"
-      "" f.nop
-      "Discord"  !"discord &"
-      "Emacs"    !"emacsclient -c || emacs $_EMACS_DUMP_FILE &"
-      "Firefox"  !"firefox --new-window &"
-      "Steam"    !"steam &"
-      "Telegram" !"telegram-desktop &"
-      "Terminal" !"urxvt &"
-      "" f.nop
-      "Quit"        f.menu "quit"
-  }
-
-  menu "quit" {
-      "Log out"   f.quit
-      "Sleep"     !"systemctl suspend -i &"
-      "Reboot"    !"restart"
-      "Shut down" !"shutdown now"
-  }
-#+end_src
-
-**** =windowmenu=
-This is the menu on every window.
-#+begin_src conf-space
-  menu "windowmenu" {
-      "Identify" f.identify
-      "Iconify"  f.iconify
-      "Raise"    f.raise
-      "Lower"    f.lower
-      "Focus"    f.focus
-      "" f.nop
-      "Close" f.delete
-      "Kill"  f.destroy
-  }
-#+end_src
-
-*** Colors
-Out of the box, ~twm~ is /ugly/. I don't want it to stay that way. I like that I am free to give it colors as I will, giving me the ability to provide consistency between my ~twm~ colors and the colors I give Emacs and GTK applications.
-#+begin_src conf-space
-  Color {
-#+end_src
-
-**** Default
-This is the default colors for blank windows (or maybe the desktop itself, I really don't know).
-#+begin_src conf-space
-  DefaultBackground "#282a36"
-  DefaultForeground "#FFFFFF"
-#+end_src
-
-**** Borders
-For the border, I use the same color as the Emacs mode line color used in Dracula.
-#+begin_src conf-space
-  BorderColor "#44475a"
-#+end_src
-
-**** Titles
-The same color is used for the title bars as for the borders.
-#+begin_src conf-space
-  TitleBackground "#44475a"
-  TitleForeground "#ffffff"
-#+end_src
-
-**** Menus
-Menus share many of the same colors as other elements.
-#+begin_src conf-space
-  MenuBorderColor "#44475a"
-  MenuShadowColor "#44475a"
-
-  MenuTitleBackground "#44475a"
-  MenuTitleForeground "#ffffff"
-
-  MenuBackground "#282a36"
-  MenuForeground "#ffffff"
-#+end_src
-
-**** Icon Manager
-The final section, for the icon manager. It'll all look very familiar.
-#+begin_src conf-space
-  IconManagerBackground "#282a36"
-  IconManagerForeground "#ffffff"
-#+end_src
-
-The block can be closed off here.
-#+begin_src conf-space
-  }
-#+end_src
-
-** Icons in ~twm~ (=twm/bitmaps=)
-Incidentally, X bitmaps are plain text, so they can be tangled instead of needing to be included in my git repository.
-
-*** Menu
-#+begin_src text :tangle (user-config-file "twm/bitmaps/menu")
-  #define menu12_width 12
-  #define menu12_height 12
-  static unsigned char menu12_bits[] = {
-     0xfe, 0x03, 0x02, 0x02, 0x02, 0x06, 0x72, 0x06, 0x02, 0x06, 0x72, 0x06,
-     0x02, 0x06, 0x72, 0x06, 0x02, 0x06, 0x02, 0x06, 0xfe, 0x07, 0xf8, 0x07
-  };
-#+end_src
-
-*** Close
-#+begin_src text :tangle (user-config-file "twm/bitmaps/close")
-  #define close_width 7
-  #define close_height 7
-  static unsigned char close_bits[] = {
-    0x41, 0x22, 0x14, 0x08, 0x14, 0x22, 0x41
-  };
-#+end_src
-
-*** Maximize
-#+begin_src text :tangle (user-config-file "twm/bitmaps/maximize")
-  #define maximize_width 7
-  #define maximize_height 7
-  static unsigned char maximize_bits[] = {
-    0x7f, 0x7f, 0x41, 0x41, 0x41, 0x41, 0x7f
-  };
-#+end_src
-
-*** Minimize
-#+begin_src text :tangle (user-config-file "twm/bitmaps/minimize")
-  #define minimize_width 7
-  #define minimize_height 7
-  static unsigned char minimize_bits[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0x7f
-  };
-#+end_src
-
-** Status bar for ~twm~ (=twm/conkyrc=)
-   :properties:
-   :header-args: :tangle (user-config-file "twm/conkyrc")
-   :end:
-Since ~twm~ does not come with its own status bar, I need to make one for it.
-
-*** Config
-#+begin_src conf
-  conky.config = {
-#+end_src
-
-**** Font
-Use ~xft~ for nicer looking fonts, and make the text as clean as possible.
-#+begin_src conf
-  use_xft = true,
-  font = 'Gohu GohuFont:pixelsize=14',
-  draw_outline = false,
-  draw_shades = false,
-#+end_src
-
-**** Window
-The window should not be managed. It will handle itself. Its background is the same color as the borders on windows in ~twm~, since it is supposed to look as though it is attached to the icon manager.
-#+begin_src conf
-  own_window = true,
-  own_window_type = 'override',
-  own_window_colour = '44475a',
-  default_color = 'white',
-  double_buffer = true,
-  border_width = 0,
-#+end_src
-
-**** Position
-Place the status bar at the top right corner, offset just barely to make the borders present.
-#+begin_src conf
-  alignment = 'top_right',
-  gap_x = 4,
-  gap_y = 4,
-#+end_src
-
-**** Update time
-Update the status bar every second, since a seconds counter is included.
-#+begin_src conf
-  update_interval = 1.0,
-#+end_src
-
-**** Fork after load
-#+begin_src conf
-  background = true,
-#+end_src
-
-With that, this block can be closed.
-#+begin_src conf
-  }
-#+end_src
-
-*** Text
-- Screen brightness
-- Volume percentage
-- Battery percentage
-- Time and date
-#+begin_src conf
-  conky.text = [[
-  Brightness: ${exec brightnessctl i | grep % | sed -r 's/.*\(([0-9]+%).*/\1/'} | \
-  Volume: ${exec amixer get Master | grep Left: | sed -r 's/.*\[(.*%).*/\1/'}\
-  ${exec [ "$(amixer get Master | grep off)" ] && echo " (Muted)" } | \
-  Battery: ${battery_percent}% | \
-  ${time %a %d %b | %H:%M:%S}
-  ]]
 #+end_src
 
 ** GTK2 Appearance (=gtk-2.0/gtkrc=)
