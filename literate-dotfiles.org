@@ -60,7 +60,7 @@ From a command line, this should look like:
 
 ** License
 Because I +am a lazy piece of shit who doesn't like long licenses+ do not think much harm could come from using a pushover license for dotfiles, I am publishing this literate Emacs configuration under the WTFPL.
-#+begin_src text :tangle (user-config-file "LICENSE")
+#+begin_src text :tangle (user-config-file "dotfiles/LICENSE")
   DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
   Version 2, December 2004
 
