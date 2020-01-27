@@ -748,13 +748,13 @@ I use ~mpc~ so I only worry about binds for that. I set binds for both the media
 #+end_src
 
 **** On a window
-- =Button1= + =Alt= = =move-or-raise=
-- =Button2= + =Alt= = =move-or-iconify=
-- =Button3= + =Alt= = =resize-or-lower=
+- =Button1= + =Super= = =move-or-raise=
+- =Button2= + =Super= = =move-or-iconify=
+- =Button3= + =Super= = =resize-or-lower=
 #+begin_src conf-space
-  Button1 = m : window | icon : f.function "move-or-raise"
-  Button2 = m : window | icon : f.function "move-or-iconify"
-  Button3 = m : window | icon : f.function "resize-or-lower"
+  Button1 = m4 : window | icon : f.function "move-or-raise"
+  Button2 = m4 : window | icon : f.function "move-or-iconify"
+  Button3 = m4 : window | icon : f.function "resize-or-lower"
 #+end_src
 
 *** Menu setup
