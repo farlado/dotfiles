@@ -1,4 +1,4 @@
-#+title: Farlado's Illiterate Dotfiles
+#+title: Farlado's Illiterate Dotfiles for ~twm~
 #+subtitle: A far-from-sane literate dotfiles configuration
 #+author: Farlado
 #+startup: hideblocks
