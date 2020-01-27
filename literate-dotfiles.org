@@ -24,7 +24,7 @@
   - [[#starting-x-x11xinitrc][Starting X (=X11/xinitrc=)]]
   - [[#configuring-twm-twmtwmrc][Configuring ~twm~ (=twm/twmrc=)]]
   - [[#icons-in-twm-twmbitmaps][Icons in ~twm~ (=twm/bitmaps=)]]
-  - [[#status-bar-for-twm-conkyconkyrc][Status bar for ~twm~ (=conky/conkyrc=)]]
+  - [[#status-bar-for-twm-conkyconkyconf][Status bar for ~twm~ (=conky/conky.conf=)]]
   - [[#configuring-rofi-roficonfigrasi][Configuring ~rofi~ (=rofi/config.rasi=)]]
   - [[#configuring-urxvt-x11xresources][Configuring ~urxvt~ (=X11/xresources=)]]
   - [[#gtk2-appearance-gtk-20gtkrc][GTK2 Appearance (=gtk-2.0/gtkrc=)]]
@@ -88,6 +88,7 @@ In order for tangling to work, the proper paths have to be present. This is done
                        ".config/gtk-2.0"
                        ".config/gtk-3.0"
                        ".local/share/zsh"
+                       ".config/xbindkeys"
                        ".config/twm/bitmaps"))
     (make-directory (expand-file-name directory (getenv "HOME")) t))
 
@@ -502,6 +503,13 @@ I don't really use the trackpad, so there's no point in keeping it enabled. I al
   setxkbmap us -option ctrl:nocaps
 #+end_src
 
+*** Music player variables
+I set these here so I don't have to worry about them later.
+#+begin_src sh
+  export MPD_HOST=localhost
+  export MPD_PORT=6601
+#+end_src
+
 *** Start a compositor
 I don't need it for too much, it just makes things a little nicer.
 #+begin_src sh
@@ -573,22 +581,25 @@ The default font looks okay, but.......
 - Don't use defaults
 - Don't let windows move off the screen
 - Don't grab the server on menus
+- Always repaint menus
 - Decorate "transient" windows
+- Attempt to grab the previous state of the window manager on restart
 - Ignore extraneous events
 #+begin_src conf-space
   NoDefaults
   DontMoveOff
   NoGrabServer
   DecorateTransients
+  RestartPreviousState
   DefaultFunction f.nop
 #+end_src
 
 **** Functions
-Movement-based actions are defined here.
 - Immediately allow movement of a window.
 - Raise/lower/iconify when moving.
 - Lower when resizing.
 - Deiconify and raise.
+- Reload twice, just to be sure.
 #+begin_src conf-space
   MoveDelta 1
   Function "move-or-raise"       { f.move f.deltastop f.raise }
@@ -602,30 +613,32 @@ Movement-based actions are defined here.
 
 *** Windows
 **** General
-- Move/resize windows, not just outlines.
-- Repaint instead of saving window state.
-- Don't raise on resize/move/deiconify.
-- Accept window size hints.
-- Allow relative resize from all regions.
+- Move windows, not just outlines
+- Repaint instead of saving window state
+- Don't raise on move/resize/deiconify
+- Use program-requested positions
+- Allow relative resize from all regions
+- Never do constrained moving
 #+begin_src conf-space
   OpaqueMove
   OpaqueResize
   NoSaveUnders
   NoRaiseOnMove
   NoRaiseOnResize
+  UsePPosition "on"
   NoRaiseOnDeiconify
   AutoRelativeResize
-  UsePPosition "on"
+  ConstrainedMoveTime 0
 #+end_src
 
-**** Title bars
+**** Titles
 For some reason, the default ~twm~ title bars are configured in a way that is an /ABSOLUTE EYESORE/. A little bit of the BeOS aesthetic fixes this up right away.
 #+begin_src conf-space
   NoTitleHighlight
   SqueezeTitle
 #+end_src
 
-**** Title buttons
+**** Buttons
 I personally like having a close button, a maximize button, and a minimize button on every window. Why wouldn't you include those? On the right side is a menu. I don't want them to be smaller, and I don't want them to have borders.
 #+begin_src conf-space
   IconDirectory "~/.config/twm/bitmaps"
@@ -638,49 +651,74 @@ I personally like having a close button, a maximize button, and a minimize butto
   TitleButtonBorderWidth 0
 #+end_src
 
-**** Border settings
-These make borders marginally better to look at. We also remove shadows from menus here.
+**** Borders
+These make borders marginally better to look at.
 #+begin_src conf-space
   BorderWidth 3
-  FramePadding 1
+  FramePadding 0
   TitlePadding 3
-  MenuBorderWidth 2
-#+end_src
-
-**** Windows without a title
-These windows should not have a title.
-#+begin_src conf-space
-  NoTitle {
-      "TWM Icon Manager"
-      "conky (eternity)"
-      "conky (navi)"
-  }
 #+end_src
 
 *** Icon Manager
-Icons are the way windows minimize. There is also an icon manager, which is configured in this section. The icon manager should be present at startup, living in the top right corner of my screen. Icons themselves shouldn't show up, rather windows should be minimized fully. The clock next to it should never show up, and the icon manager itself should automatically rise when it's focused. It also shouldn't move around.
+Icons are the way windows minimize. There is also an icon manager, which is configured in this section. The icon manager should be present at startup, living in the top right corner of my screen. Icons themselves shouldn't show up, rather windows should be minimized fully.The icon manager itself should automatically rise when it's focused.
 #+begin_src conf-space
   ShowIconManager
   SortIconManager
   NoCaseSensitive
   IconifyByUnmapping
   IconManagerGeometry "=171x10-0+22" 1
-  IconManagerDontShow {
-      "conky (navi)"
-      "conky (eternity)"
-      "TWM Icon Manager"
-  }
+  NoTitle { "TWM Icon Manager" }
+  IconManagerDontShow { "TWM Icon Manager" }
   AutoRaise { "TWM Icon Manager" }
 #+end_src
 
 *** Key bindings
+**** Related to ~twm~
 - =F11= = Fullscreen toggle
 - =Alt= + =Tab= = Warp to Icon Manager
+- =Alt= + =F4= = Close window
 #+begin_src conf-space
   "F11" =   : all : f.fullzoom
+  "F4" = m : all : f.delete
   "Tab" = m : all : f.warpto "TWM Icon Manager"
 #+end_src
 
+**** Brightness controls
+To my delight, ~twm~ can handle =XF86= keys, meaning I don't have to grab ~xbindkeys~ to bind keys properly!
+#+begin_src conf-space
+  "XF86MonBrightnessUp"   = : all : !"brightnessctl s 1%+"
+  "XF86MonBrightnessDown" = : all : !"brightnessctl s 1%-"
+#+end_src
+
+**** Volume controls
+#+begin_src conf-space
+  "XF86AudioMute"        = : all : !"amixer set Master 1+ toggle"
+  "XF86AudioRaiseVolume" = : all : !"amixer set Master 5%+"
+  "XF86AudioLowerVolume" = : all : !"amixer set Master 5%-"
+  "XF86AudioMicMute"     = : all : !"amixer set Capture 1+ toggle"
+#+end_src
+
+**** Media controls
+I use ~mpc~ so I only worry about binds for that. I set binds for both the media keys and =Super= plus arrow keys, since some systems I use don't have media keys.
+#+begin_src conf-space
+  "XF86AudioPlay"  = : all : !"mpc toggle"
+  "XF86AudioPause" = : all : !"mpc toggle"
+  "XF86AudioStop"  = : all : !"mpc stop"
+  "XF86AudioNext"  = : all : !"mpc next"
+  "XF86AudioPrev"  = : all : !"mpc prev"
+
+  "Up"    = m4 : all : !"mpc stop"
+  "Down"  = m4 : all : !"mpc toggle"
+  "Right" = m4 : all : !"mpc next"
+  "Left"  = m4 : all : !"mpc prev"
+#+end_src
+
+**** Screenshots
+#+begin_src conf-space
+  "Print" =   : all : !"maim -s /dev/stdout | xclip -selection clipboard -t image/png &"
+  "Print" = c : all : !"maim /dev/stdout | xclip -selection clipboard -t image/png &"
+
+#+end_src
 *** Mouse bindings
 **** On the icon manager
 - =Button1= = =deiconify-and-raise=
@@ -721,13 +759,20 @@ Icons are the way windows minimize. There is also an icon manager, which is conf
 
 *** Menu setup
 Since ~twm~ seems to rely quite a bit on the mouse, of course it involves menus.
+- Set menu border width to 2
+- Always redraw the menu instead of backing store
+#+begin_src conf-space
+  MenuBorderWidth 2
+  NoBackingStore
+#+end_src
 
 **** =twmops=
-This menu is mainly supposed to concern things specifically related to ~twm~ or launching windows. Exiting is put in its own sub-menu.
+This menu is mainly supposed to concern things specifically related to ~twm~ or launching windows. Exiting is put in its own sub-menu, as is taking a screenshot.
 #+begin_src conf-space
   menu "twmops" {
       "twm" f.title
-      "Run..." !"rofi -show run &"
+      "Run..."     !"rofi -show run &"
+      "Screenshot" f.menu "screenshot"
       "" f.nop
       "Discord"  !"discord &"
       "Emacs"    !"emacsclient -c || emacs $_EMACS_DUMP_FILE &"
@@ -737,6 +782,11 @@ This menu is mainly supposed to concern things specifically related to ~twm~ or 
       "Terminal" !"urxvt &"
       "" f.nop
       "Quit" f.menu "quit"
+  }
+
+  menu "screenshot" {
+      "Selection" !"maim -s /dev/stdout | xclip -selection clipboard -t image/png &"
+      "Full"      !"maim /dev/stdout | xclip -selection clipboard -t image/png &"
   }
 
   menu "quit" {
@@ -869,7 +919,7 @@ Incidentally, X bitmaps are plain text, so they can be tangled instead of needin
   };
 #+end_src
 
-** Status bar for ~twm~ (=conky/conkyrc=)
+** Status bar for ~twm~ (=conky/conky.conf=)
    :properties:
    :header-args: :tangle (user-config-file "conky/conky.conf")
    :end:
