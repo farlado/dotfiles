@@ -10,22 +10,23 @@
 - [[#about-this-configuration][About this configuration]]
   - [[#benefits][Benefits]]
   - [[#limitations][Limitations]]
+  - [[#about-this-branch][About this branch]]
   - [[#installation][Installation]]
   - [[#license][License]]
 - [[#on-tangle][On tangle]]
   - [[#making-the-proper-paths][Making the proper paths]]
   - [[#tangling-absolute-paths][Tangling absolute paths]]
 - [[#shell][Shell]]
-  - [[#on-login-homezprofile][On login (=$HOME/.zprofile=)]]
   - [[#quiet-login-homehushlogin][Quiet login (=$HOME/.hushlogin=)]]
+  - [[#on-login-homezprofile][On login (=$HOME/.zprofile=)]]
   - [[#configuration-homezshrc][Configuration (=$HOME/.zshrc=)]]
 - [[#x-session][X session]]
-  - [[#starting-exwm-x11xinitrc-emacs][Starting ~EXWM~ (=X11/xinitrc-emacs=)]]
-  - [[#starting-twm-x11xinitrc-twm][Starting ~twm~ (=X11/xinitrc-twm=)]]
-  - [[#configuring-urxvt-x11xresources][Configuring ~urxvt~ (=X11/xresources=)]]
+  - [[#starting-x-x11xinitrc][Starting X (=X11/xinitrc=)]]
   - [[#configuring-twm-twmtwmrc][Configuring ~twm~ (=twm/twmrc=)]]
   - [[#icons-in-twm-twmbitmaps][Icons in ~twm~ (=twm/bitmaps=)]]
-  - [[#status-bar-for-twm-twmconkyrc][Status bar for ~twm~ (=twm/conkyrc=)]]
+  - [[#status-bar-for-twm-conkyconkyrc][Status bar for ~twm~ (=conky/conkyrc=)]]
+  - [[#configuring-rofi-roficonfigrasi][Configuring ~rofi~ (=rofi/config.rasi=)]]
+  - [[#configuring-urxvt-x11xresources][Configuring ~urxvt~ (=X11/xresources=)]]
   - [[#gtk2-appearance-gtk-20gtkrc][GTK2 Appearance (=gtk-2.0/gtkrc=)]]
   - [[#gtk3-appearance-gtk-30settingsini][GTK3 appearance (=gtk-3.0/settings.ini=)]]
 - [[#music-player-mpdmpdconf][Music player (=mpd/mpd.conf=)]]
@@ -43,6 +44,9 @@ Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME= 
 
 ** Limitations
 This repository is still very much a hybrid of literate files and files that very much are not literate. However, it should be possible, so long as these files are placed into the right directories, to end up with a working desktop environment. I also do a lot of system configuration, but it's done in a [[file:literate-sysconfig.org][different file]].
+
+** About this branch
+Because of the fact I am starting to maintain multiple rices, I now place each one in its own unique repository. The one I use daily will remain the master branch, but other branches will be created as I give multiple desktop environments and window managers their chances to impress me. This branch in particular is for ~twm~, the /standard/ window manager for X11. It seems rather barebones at first, and certainly looks like an eyesore at a glance, but provides a surprising amount of power and customization.
 
 ** Installation
 1. Clone the repository into its own directory (I personally use =$HOME/.config/dotfiles=)
@@ -79,7 +83,8 @@ In order for tangling to work, the proper paths have to be present. This is done
 #+begin_src emacs-lisp
   (dolist (directory '(".cache/zsh"
                        ".config/mpd"
-                       ".config/X11"
+                       ".config/rofi"
+                       ".config/conky"
                        ".config/gtk-2.0"
                        ".config/gtk-3.0"
                        ".local/share/zsh"
@@ -117,6 +122,14 @@ There are some fields which require absolute paths. This means I have to use som
 #+end_src
 
 * Shell
+** Quiet login (=$HOME/.hushlogin=)
+   :properties:
+   :header-args: :tangle (user-home-file ".hushlogin")
+   :end:
+I don't need to know the last time I logged in, I'd rather the login process be as quiet as possible. This file needs no actual contents, so the block that makes the file is not exported.
+#+begin_src :exports none
+#+end_src
+
 ** On login (=$HOME/.zprofile=)
    :properties:
    :header-args: :tangle (user-home-file ".zprofile")
@@ -153,21 +166,11 @@ The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my b
 #+end_src
 
 *** Login behavior
-- On =tty1=, start [[#starting-exwm-xinitrc-emacs][EXWM]].
-- On =tty2=, start [[#starting-twm-xinitrc-twm][twm]].
+On =tty1=, start X. Otherwise, just move on to the shell.
 #+begin_src sh
   case $(tty | sed 's/\/dev\/tty//') in
-      1) exec startx $XDG_CONFIG_HOME/X11/xinitrc-emacs &> /dev/null;;
-      2) exec startx $XDG_CONFIG_HOME/X11/xinitrc-twm &> /dev/null;;
+      1) exec startx $XDG_CONFIG_HOME/X11/xinitrc &> /dev/null;;
   esac
-#+end_src
-
-** Quiet login (=$HOME/.hushlogin=)
-   :properties:
-   :header-args: :tangle (user-home-file ".hushlogin")
-   :end:
-I don't need to know the last time I logged in, I'd rather the login process be as quiet as possible. This file needs no actual contents, so the block that makes the file is not exported.
-#+begin_src :exports none
 #+end_src
 
 ** Configuration (=$HOME/.zshrc=)
@@ -466,52 +469,10 @@ This is just a point of personal aesthetic preference. I like having some kind o
 #+end_src
 
 * X session
-** Starting ~EXWM~ (=X11/xinitrc-emacs=)
-  :properties:
-  :header-args: :tangle (user-config-file "X11/xinitrc-emacs")
-  :end:
-Emacs is my daily-driver desktop. This file is relatively minimal since most configuration is done in Emacs itself.
-
-*** Force 1080p on my W541 displays
-Because I limit the resolution to 1080p but my W541 wants to display 3K, I need to force it. The displays I dock to also need configuration.
-#+begin_src sh
-  xrandr | grep 'DP2-1 connected' 1> /dev/null 2>/dev/null && {
-      xrandr --output eDP1 --off \
-             --output DP2-1 --mode 1920x1080 --rotate left --pos 0x0 \
-             --output DP2-2 --primary --rate 75 --mode 1920x1080 --pos 1080x0 \
-             --output DP2-3 --mode 1920x1080 --rotate right --pos 3000x0
-  } || {
-      xrandr --output eDP1 --primary --mode 1920x1080 --pos 0x0 \
-             --output DP2-1 --off \
-             --output DP2-2 --off \
-             --output DP2-3 --off
-  }
-#+end_src
-
-*** Set an environment variable for the window manager
-Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-startup-3][my Emacs configuration]] I use the environment variable ~_RUN_EXWM~ to signal to Emacs that it should run as my desktop environment.
-#+begin_src sh
-  export _RUN_EXWM=1
-#+end_src
-
-*** Make the background the color of my Emacs background
-This makes Emacs startup look a lot more consistent.
-#+begin_src sh
-  hsetroot -solid "#282a36"
-#+end_src
-
-*** Run the window manager
-In this case, we start Emacs.
-#+begin_src sh
-  exec emacs $_EMACS_DUMP_FILE
-#+end_src
-
-** Starting ~twm~ (=X11/xinitrc-twm=)
+** Starting X (=X11/xinitrc=)
    :properties:
-   :header-args: :tangle (user-config-file "X11/xinitrc-twm")
+   :header-args: :tangle (user-config-file "X11/xinitrc")
    :end:
-This is just for funsies. I like ~twm~ even though I'll never truly be able to "live" in it.
-
 *** Force 1080p on my W541
 Because I limit the resolution to 1080p but my W541 wants to display 3K, I need to force it. The displays I dock to also need configuration.
 #+begin_src sh
@@ -583,50 +544,12 @@ An annoyance that it doesn't look correct right away...
 *** Status bar
 Since ~twm~ doesn't come with any kind of status indicators, I need to make one for myself and it's started here, placed right above my icon manager. Incidentally, this makes the top right corner bear some resemblance to the BeOS Tracker.
 #+begin_src sh
-  conky -c $XDG_CONFIG_HOME/twm/conkyrc
+  conky
 #+end_src
 
 *** Start ~twm~
 #+begin_src sh
   exec twm -f $XDG_CONFIG_HOME/twm/twmrc
-#+end_src
-
-** Configuring ~urxvt~ (=X11/xresources=)
-   :properties:
-   :header-args: :tangle (user-config-file "X11/xresources")
-   :end:
-I don't like using Emacs as a terminal when I'm in a non-Emacs desktop environment. It just doesn't make sense.
-
-*** Font/Scrollbar
-Of course I want to use the same font across all my applications. Also I have no need for a scroll bar.
-#+begin_src conf-xdefaults :noweb yes
-  URxvt*geometry: 80x24
-  URxvt*font: xft:Iosevka:size=10
-  URxvt*scrollBar: False
-#+end_src
-
-*** Colors
-This is basically just Dracula.
-#+begin_src conf-xdefaults
-  ! Dracula Xresources palette
-  URxvt*foreground: #F8F8F2
-  URxvt*background: #282a36
-  URxvt*color0:     #000000
-  URxvt*color8:     #4D4D4D
-  URxvt*color1:     #FF5555
-  URxvt*color9:     #FF6E67
-  URxvt*color2:     #50FA7B
-  URxvt*color10:    #5AF78E
-  URxvt*color3:     #F1FA8C
-  URxvt*color11:    #F4F99D
-  URxvt*color4:     #BD93F9
-  URxvt*color12:    #CAA9FA
-  URxvt*color5:     #FF79C6
-  URxvt*color13:    #FF92D0
-  URxvt*color6:     #8BE9FD
-  URxvt*color14:    #9AEDFE
-  URxvt*color7:     #BFBFBF
-  URxvt*color15:    #E6E6E6
 #+end_src
 
 ** Configuring ~twm~ (=twm/twmrc=)
@@ -648,11 +571,13 @@ The default font looks okay, but.......
 *** System
 **** Settings
 - Don't use defaults
+- Don't let windows move off the screen
 - Don't grab the server on menus
 - Decorate "transient" windows
 - Ignore extraneous events
 #+begin_src conf-space
   NoDefaults
+  DontMoveOff
   NoGrabServer
   DecorateTransients
   DefaultFunction f.nop
@@ -697,7 +622,6 @@ Movement-based actions are defined here.
 For some reason, the default ~twm~ title bars are configured in a way that is an /ABSOLUTE EYESORE/. A little bit of the BeOS aesthetic fixes this up right away.
 #+begin_src conf-space
   NoTitleHighlight
-  NoHighlight
   SqueezeTitle
 #+end_src
 
@@ -740,7 +664,7 @@ Icons are the way windows minimize. There is also an icon manager, which is conf
   SortIconManager
   NoCaseSensitive
   IconifyByUnmapping
-  IconManagerGeometry "=171x10-0+20" 1
+  IconManagerGeometry "=171x10-0+22" 1
   IconManagerDontShow {
       "conky (navi)"
       "conky (eternity)"
@@ -811,7 +735,7 @@ This menu is mainly supposed to concern things specifically related to ~twm~ or 
       "Telegram" !"telegram-desktop &"
       "Terminal" !"urxvt &"
       "" f.nop
-      "Quit"        f.menu "quit"
+      "Quit" f.menu "quit"
   }
 
   menu "quit" {
@@ -851,9 +775,11 @@ This is the default colors for blank windows (or maybe the desktop itself, I rea
 #+end_src
 
 **** Borders
-For the border, I use the same color as the Emacs mode line color used in Dracula.
+For the active border, I use the same color as the Emacs mode line color used in Dracula. For the inactive border, I use a blend of the active border color and the official Dracula background.
 #+begin_src conf-space
   BorderColor "#44475a"
+  BorderTileBackground "#282a36"
+  BorderTileForeground "#44475a"
 #+end_src
 
 **** Titles
@@ -881,9 +807,10 @@ The final section, for the icon manager. It'll all look very familiar.
 #+begin_src conf-space
   IconManagerBackground "#282a36"
   IconManagerForeground "#ffffff"
+  IconManagerHighlight "#44475a"
 #+end_src
 
-The block can be closed off here.
+With that, we can close the block.
 #+begin_src conf-space
   }
 #+end_src
@@ -928,9 +855,9 @@ Incidentally, X bitmaps are plain text, so they can be tangled instead of needin
   };
 #+end_src
 
-** Status bar for ~twm~ (=twm/conkyrc=)
+** Status bar for ~twm~ (=conky/conkyrc=)
    :properties:
-   :header-args: :tangle (user-config-file "twm/conkyrc")
+   :header-args: :tangle (user-config-file "conky/conky.conf")
    :end:
 Since ~twm~ does not come with its own status bar, I need to make one for it.
 
@@ -996,6 +923,179 @@ With that, this block can be closed.
   Battery: ${battery_percent}% | \
   ${time %a %d %b | %H:%M:%S}
   ]]
+#+end_src
+
+** Configuring ~rofi~ (=rofi/config.rasi=)
+   :properties:
+   :header-args: :tangle (user-config-file "rofi/config.rasi")
+   :end:
+Since there's no real hub for everything that can be run, I need something that can give a prompt for what to run. Because +I don't support Nazi software+ I don't really like Suckless tools, I use ~rofi~ for this.
+
+*** Basic configuration
+All I need to set are a font, a width, how many lines of options to show, and a prompt.
+#+begin_src conf-colon
+  configuration {
+      font: "Iosevka 10";
+      width: 250;
+      lines: 7;
+      display-run: "Run: ";
+  }
+#+end_src
+
+*** Color scheme
+It's Dracula, so I don't really need to show it again.
+#+begin_src conf-colon :exports none
+  // Dracula colors
+  ,* {
+      background:   rgba ( 40, 42, 54, 100 % );
+      current-line: rgba ( 248, 248, 242, 100 % );
+      selection:     rgba ( 68, 71, 90, 100 % );
+      foreground:   rgba ( 248, 248, 242, 100 % );
+      comment:     rgba ( 98, 114, 164, 100 % );
+      cyan:     rgba ( 68, 71, 90, 100 % );
+      green:     rgba ( 80, 250, 123, 100 % );
+      orange:     rgba ( 255, 184, 108, 100 % );
+      pink:     rgba ( 255, 121, 198, 100 % );
+      purple:     rgba ( 189, 147, 249, 100 % );
+      red:     rgba ( 255, 85, 85, 100 % );
+      yellow:     rgba ( 241, 250, 140, 100 % );
+  }
+  ,* {
+      selected-normal-background:     @cyan;
+      normal-background:              @background;
+      normal-foreground:              @foreground;
+      alternate-normal-background:    @normal-background;
+      alternate-normal-foreground:    @foreground;
+      selected-normal-foreground:     @foreground;
+      urgent-foreground:              @red;
+      urgent-background:              @normal-background;
+      alternate-urgent-background:    @urgent-foreground;
+      alternate-urgent-foreground:    @urgent-foreground;
+      selected-active-foreground:     @foreground;
+      selected-urgent-background:     @normal-background;
+      alternate-active-background:    @normal-background;
+      alternate-active-foreground:    @selected-active-foreground;
+      alternate-active-background:    @selected-active-background;
+      border-color:                   @selected-normal-background;
+      separatorcolor:                 @border-color;
+      spacing: 2;
+      background-color: @normal-background;
+  }
+  #window {
+      border:           3;
+      padding:          9;
+  }
+  #mainbox {
+      background-color: inherit;
+      border:  0;
+      padding: 0;
+  }
+  #textbox {
+      text-color: @foreground;
+  }
+  #element {
+      border:  0;
+      padding: 1px ;
+  }
+  #element.normal.normal {
+      background-color: @normal-background;
+      text-color:       @normal-foreground;
+  }
+  #element.normal.urgent {
+      background-color: @urgent-background;
+      text-color:       @urgent-foreground;
+  }
+  #element.normal.active {
+      background-color: @active-background;
+      text-color:       @active-foreground;
+  }
+  #element.selected.normal {
+      background-color: @selected-normal-background;
+      text-color:       @selected-normal-foreground;
+  }
+  #element.selected.urgent {
+      background-color: @selected-urgent-background;
+      text-color:       @selected-urgent-foreground;
+  }
+  #element.selected.active {
+      background-color: @selected-active-background;
+      text-color:       @selected-active-foreground;
+  }
+  #element.alternate.normal {
+      background-color: @alternate-normal-background;
+      text-color:       @alternate-normal-foreground;
+  }
+  #element.alternate.urgent {
+      background-color: @alternate-urgent-background;
+      text-color:       @alternate-urgent-foreground;
+  }
+  #element.alternate.active {
+      background-color: @alternate-active-background;
+      text-color:       @alternate-active-foreground;
+  }
+  #scrollbar {
+      border:       0;
+  }
+  #button.selected {
+      background-color: @selected-normal-background;
+      text-color:       @selected-normal-foreground;
+  }
+  #inputbar {
+      spacing:    0;
+      text-color: @normal-foreground;
+      background-color: inherit;
+      padding:    1px ;
+  }
+  #case-indicator {
+      spacing:    0;
+      text-color: @normal-background;
+  }
+  #entry {
+      spacing:    0;
+      text-color: @normal-foreground;
+  }
+  #prompt {
+      spacing:    0;
+      text-color: @normal-foreground;
+  }
+#+end_src
+
+** Configuring ~urxvt~ (=X11/xresources=)
+   :properties:
+   :header-args: :tangle (user-config-file "X11/xresources")
+   :end:
+Emacs provides me a virtual terminal, but personally I prefer having one that isn't tied to Emacs.
+
+*** Font/Scrollbar
+Of course I want to use the same font across all my applications. Also I have no need for a scroll bar.
+#+begin_src conf-xdefaults :noweb yes
+  URxvt*geometry: 80x24
+  URxvt*font: xft:Iosevka:size=10
+  URxvt*scrollBar: False
+#+end_src
+
+*** Colors
+This is basically just Dracula.
+#+begin_src conf-xdefaults
+  ! Dracula Xresources palette
+  URxvt*foreground: #F8F8F2
+  URxvt*background: #282a36
+  URxvt*color0:     #000000
+  URxvt*color8:     #4D4D4D
+  URxvt*color1:     #FF5555
+  URxvt*color9:     #FF6E67
+  URxvt*color2:     #50FA7B
+  URxvt*color10:    #5AF78E
+  URxvt*color3:     #F1FA8C
+  URxvt*color11:    #F4F99D
+  URxvt*color4:     #BD93F9
+  URxvt*color12:    #CAA9FA
+  URxvt*color5:     #FF79C6
+  URxvt*color13:    #FF92D0
+  URxvt*color6:     #8BE9FD
+  URxvt*color14:    #9AEDFE
+  URxvt*color7:     #BFBFBF
+  URxvt*color15:    #E6E6E6
 #+end_src
 
 ** GTK2 Appearance (=gtk-2.0/gtkrc=)
