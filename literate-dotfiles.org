@@ -73,9 +73,6 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
 #+end_src
 
 * On tangle
-  :properties:
-  :header-args: :tangle no
-  :end:
 ** Making the proper paths
 In order for tangling to work, the proper paths have to be present. This is done with a hidden block that tangles to a temporary file out in the middle of nowhere. In order to do configurations to Firefox, an additional block is used to run it for a short time to generate profiles.
 #+name: mkdir
@@ -497,7 +494,7 @@ Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-st
 *** Make the background the color of my Emacs background
 This makes Emacs startup look a lot more consistent.
 #+begin_src sh
-  xsetroot -solid "#282a36"
+  hsetroot -solid "#282a36"
 #+end_src
 
 *** Run the window manager
