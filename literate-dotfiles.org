@@ -890,7 +890,7 @@ The window should not be managed. It will handle itself. Its background is the s
 Place the status bar at the top right corner, offset just barely to make the borders present.
 #+begin_src conf
   alignment = 'top_right',
-  gap_x = 4,
+  gap_x = 2,
   gap_y = 4,
 #+end_src
 
