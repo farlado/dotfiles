@@ -1187,7 +1187,7 @@ Much human intervention is still required of this part of the configuration:
 - Some website specific settings cannot be set here.
 
 ** Disabling tabs (=chrome/userChrome.css=)
-Since Emacs manages my windows as buffers, it makes no sense to have multiple tabs per single buffer. Part of this involves removing the tab bar.
+I got used to managing single browser windows thanks to EXWM. I still can't go back to having tabs when surfing the web.
 #+begin_src css :tangle (expand-file-name "chrome/userChrome.css" (getenv "FFDIR"))
   #TabsToolbar { visibility: collapse !important; }
 #+end_src
