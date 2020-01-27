@@ -46,7 +46,7 @@ Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME= 
 This repository is still very much a hybrid of literate files and files that very much are not literate. However, it should be possible, so long as these files are placed into the right directories, to end up with a working desktop environment. I also do a lot of system configuration, but it's done in a [[file:literate-sysconfig.org][different file]].
 
 ** About this branch
-Because of the fact I am starting to maintain multiple rices, I now place each one in its own unique repository. The one I use daily will remain the master branch, but other branches will be created as I give multiple desktop environments and window managers their chances to impress me. This branch in particular is for ~twm~, the /standard/ window manager for X11. It seems rather barebones at first, and certainly looks like an eyesore at a glance, but provides a surprising amount of power and customization.
+Because of the fact I am starting to maintain multiple rices, I now place each one in its own unique repository. The one I use daily will remain the primary branch, but other branches will be created as I give multiple desktop environments and window managers their chances to impress me. This branch in particular is for ~twm~, the /standard/ window manager for X11. It seems rather barebones at first, and certainly looks like an eyesore at a glance, but provides a surprising amount of power and customization.
 
 ** Installation
 1. Clone the repository into its own directory (I personally use =$HOME/.config/dotfiles=)
@@ -60,7 +60,7 @@ From a command line, this should look like:
 
 ** License
 Because I +am a lazy piece of shit who doesn't like long licenses+ do not think much harm could come from using a pushover license for dotfiles, I am publishing this literate Emacs configuration under the WTFPL.
-#+begin_src text :tangle (user-config-file "LICENSE")
+#+begin_src text :tangle (user-config-file "dotfiles/LICENSE")
   DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
   Version 2, December 2004
 
