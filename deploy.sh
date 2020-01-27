@@ -83,4 +83,8 @@ emacs --batch \
 echo Generating dump image for Emacs...
 emacs --batch -q -l $XDG_CONFIG_HOME/emacs/lisp/pdumper.el
 
+echo Installing virtual desktop support...
+cd $XDG_CONFIG_HOME/dotfiles/vdesk
+makepkg -si
+
 echo You will have to now open Emacs and enter: \`C-c C-M-e C-c C-v t\`

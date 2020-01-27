@@ -757,11 +757,6 @@ Using ~vdesk~, I can manage multiple virtual desktops. This menu is bound to the
        "3"  !"vdesk 3"
        "4"  !"vdesk 4"
        "5"  !"vdesk 5"
-       "6"  !"vdesk 6"
-       "7"  !"vdesk 7"
-       "8"  !"vdesk 8"
-       "9"  !"vdesk 9"
-       "10" !"vdesk 10"
   }
 #+end_src
 
