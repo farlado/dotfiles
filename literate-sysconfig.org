@@ -34,8 +34,7 @@ In order for tangling to work, the proper paths have to be present. This is done
                          "systemd/system"
                          "pacman.d/hooks"
                          "libreoffice"
-                         "default"
-                         "X11"))
+                         "default"))
       (make-directory directory t)))
 #+end_src
 #+begin_src text :tangle /tmp/sys :noweb yes :exports no
