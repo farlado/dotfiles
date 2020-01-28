@@ -154,7 +154,7 @@ The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my b
 On =tty1=, start X. Otherwise, just move on to the shell.
 #+begin_src sh
   case $(tty | sed 's/\/dev\/tty//') in
-      1) exec startx $XDG_CONFIG_HOME/X11/xinitrc-emacs &> /dev/null;;
+      1) exec startx $XDG_CONFIG_HOME/X11/xinitrc &> /dev/null;;
   esac
 #+end_src
 
