@@ -34,8 +34,7 @@ In order for tangling to work, the proper paths have to be present. This is done
                          "systemd/system"
                          "pacman.d/hooks"
                          "libreoffice"
-                         "default"
-                         "X11"))
+                         "default"))
       (make-directory directory t)))
 #+end_src
 #+begin_src text :tangle /tmp/sys :noweb yes :exports no
@@ -47,7 +46,7 @@ This file was /way too huge/ for Emacs to handle inside of ~org-mode~. It's copi
 #+name: cphosts
 #+begin_src emacs-lisp
   (let ((default-directory "/sudo::/etc"))
-    (shell-command (concat "cp " (user-config-file "deploy/hosts") " hosts")))
+    (shell-command (concat "cp " (user-config-file "dotfiles/deploy/hosts") " hosts")))
 #+end_src
 
 * Fan management (~thinkfan.conf~)
