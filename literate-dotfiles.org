@@ -382,13 +382,18 @@ Finally, if when writing the prompt a git branch is found, return a string with 
 
 *** When Emacs is the terminal
 There is an Emacs package called ~vterm~ which allows use of Emacs as a fully-featured terminal emulator. There are a number of features which require configuration in the shell.
-#+begin_src sh
+#+begin_src sh :noweb yes
   if [ "$INSIDE_EMACS" = "vterm" ]; then
+      <<vprintf>>
+      <<clear>>
+      <<vim>>
+  fi
 #+end_src
 
 **** Push Emacs commands from ~vterm~
 This allows me to clear scrollback easily.
-#+begin_src sh
+#+name: vprintf
+#+begin_src sh :tangle no
   function vterm_printf(){
       if [ -n "$TMUX" ]; then
           printf "\ePtmux;\e\e]%s\007\e\\" "$1"
@@ -403,13 +408,15 @@ This allows me to clear scrollback easily.
 
 **** Clear all scrollback when clearing
 This is why we enable pushing Emacs commands from ~vterm~.
-#+begin_src sh
+#+name: clear
+#+begin_src sh :tangle no
   alias clear='vterm_printf "51;Evterm-clear-scrollback";tput clear'
 #+end_src
 
 **** "Alias" ~vim~ into ~emacsclient~
 I can't get over old muscle memory, even after months of using Emacs. Typing ~vim~ in the terminal to edit files is only natural, so I set up a proper function to call ~emacsclient~ when I type ~vim~.
-#+begin_src sh
+#+name: vim
+#+begin_src sh :tangle no
   function vim() {
       [ "$@" ] && {
           emacsclient $@
@@ -418,11 +425,6 @@ I can't get over old muscle memory, even after months of using Emacs. Typing ~vi
           return 1
       }
   }
-#+end_src
-
-With all this now configured, we can close the if block.
-#+begin_src sh
-  fi
 #+end_src
 
 *** Syntax highlighting in the shell
@@ -833,20 +835,28 @@ This is the menu on every window.
 
 *** Colors
 Out of the box, ~twm~ is /ugly/. I don't want it to stay that way. I like that I am free to give it colors as I will, giving me the ability to provide consistency between my ~twm~ colors and the colors I give Emacs and GTK applications.
-#+begin_src conf-space
+#+begin_src conf-space :noweb yes
   Color {
+      <<default>>
+      <<borders>>
+      <<titles>>
+      <<menus>>
+      <<iconmgr>>
+  }
 #+end_src
 
 **** Default
 This is the default colors for blank windows (or maybe the desktop itself, I really don't know).
-#+begin_src conf-space
+#+name: default
+#+begin_src conf-space :tangle no
   DefaultBackground "#282a36"
   DefaultForeground "#FFFFFF"
 #+end_src
 
 **** Borders
 For the active border, I use the same color as the Emacs mode line color used in Dracula. For the inactive border, I use a blend of the active border color and the official Dracula background.
-#+begin_src conf-space
+#+name: borders
+#+begin_src conf-space :tangle no
   BorderColor "#44475a"
   BorderTileBackground "#282a36"
   BorderTileForeground "#44475a"
@@ -854,35 +864,31 @@ For the active border, I use the same color as the Emacs mode line color used in
 
 **** Titles
 The same color is used for the title bars as for the borders.
-#+begin_src conf-space
+#+name: titles
+#+begin_src conf-space :tangle no
   TitleBackground "#44475a"
   TitleForeground "#ffffff"
 #+end_src
 
 **** Menus
 Menus share many of the same colors as other elements.
-#+begin_src conf-space
+#+name: menus
+#+begin_src conf-space :tangle no
   MenuBorderColor "#44475a"
   MenuShadowColor "#44475a"
-
   MenuTitleBackground "#44475a"
   MenuTitleForeground "#ffffff"
-
   MenuBackground "#282a36"
   MenuForeground "#ffffff"
 #+end_src
 
 **** Icon Manager
 The final section, for the icon manager. It'll all look very familiar.
-#+begin_src conf-space
+#+name: iconmgr
+#+begin_src conf-space :tangle no
   IconManagerBackground "#282a36"
   IconManagerForeground "#ffffff"
   IconManagerHighlight "#44475a"
-#+end_src
-
-With that, we can close the block.
-#+begin_src conf-space
-  }
 #+end_src
 
 ** Icons in ~twm~ (=twm/bitmaps=)
