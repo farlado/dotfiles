@@ -374,13 +374,18 @@ Finally, if when writing the prompt a git branch is found, return a string with 
 
 *** When Emacs is the terminal
 There is an Emacs package called ~vterm~ which allows use of Emacs as a fully-featured terminal emulator. There are a number of features which require configuration in the shell.
-#+begin_src sh
+#+begin_src sh :noweb yes
   if [ "$INSIDE_EMACS" = "vterm" ]; then
+      <<vprintf>>
+      <<clear>>
+      <<vim>>
+  fi
 #+end_src
 
 **** Push Emacs commands from ~vterm~
 This allows me to clear scrollback easily.
-#+begin_src sh
+#+name: vprintf
+#+begin_src sh :tangle no
   function vterm_printf(){
       if [ -n "$TMUX" ]; then
           printf "\ePtmux;\e\e]%s\007\e\\" "$1"
@@ -395,13 +400,15 @@ This allows me to clear scrollback easily.
 
 **** Clear all scrollback when clearing
 This is why we enable pushing Emacs commands from ~vterm~.
-#+begin_src sh
+#+name: clear
+#+begin_src sh :tangle no
   alias clear='vterm_printf "51;Evterm-clear-scrollback";tput clear'
 #+end_src
 
 **** "Alias" ~vim~ into ~emacsclient~
 I can't get over old muscle memory, even after months of using Emacs. Typing ~vim~ in the terminal to edit files is only natural, so I set up a proper function to call ~emacsclient~ when I type ~vim~.
-#+begin_src sh
+#+name: vim
+#+begin_src sh :tangle no
   function vim() {
       [ "$@" ] && {
           emacsclient $@
@@ -410,11 +417,6 @@ I can't get over old muscle memory, even after months of using Emacs. Typing ~vi
           return 1
       }
   }
-#+end_src
-
-With all this now configured, we can close the if block.
-#+begin_src sh
-  fi
 #+end_src
 
 *** Syntax highlighting in the shell
