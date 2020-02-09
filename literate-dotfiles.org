@@ -151,10 +151,11 @@ The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my b
 #+end_src
 
 *** Login behavior
-On =tty1=, start X. Otherwise, just move on to the shell.
+On =tty1=, start X. On =tty2=, run =pdumper.el= to generate a dump image for Emacs.
 #+begin_src sh
   case $(tty | sed 's/\/dev\/tty//') in
       1) exec startx $XDG_CONFIG_HOME/X11/xinitrc &> /dev/null;;
+      2) exec emacs --batch -q -l $XDG_CONFIG_HOME/emacs/pdumper.el;;
   esac
 #+end_src
 
@@ -495,7 +496,7 @@ Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-st
 *** Make the background the color of my Emacs background
 This makes Emacs startup look a lot more consistent.
 #+begin_src sh
-  hsetroot -solid "#282a36"
+  hsetroot -solid "#ffffff"
 #+end_src
 
 *** Run the window manager
@@ -508,9 +509,9 @@ In this case, we start Emacs.
    :properties:
    :header-args: :tangle (user-config-file "gtk-2.0/gtkrc")
    :end:
-These settings apply the theme, cursor, and icons I prefer, along with other preferred visual settings. Some size values determined [[#tangling-the-right-size-values][above]].
+These settings apply the theme, cursor, and icons I prefer, along with other preferred visual settings.
 #+begin_src conf-unix :noweb yes
-  gtk-theme-name="Ant-Dracula"
+  gtk-theme-name="Plata-Lumine-Compact"
   gtk-icon-theme-name="HighContrast"
   gtk-font-name="Iosevka 10"
   gtk-cursor-theme-name="Bibata_Ice"
@@ -531,10 +532,10 @@ These settings apply the theme, cursor, and icons I prefer, along with other pre
    :properties:
    :header-args: :tangle (user-config-file "gtk-3.0/settings.ini")
    :end:
-This is the exact same settings as seen in [[#gtk2-appearance-gtkrc][GTK2's configuration]], but instead for GTK3. This also includes the size values determined [[#tangling-the-right-size-values][above]].
+This is the exact same settings as seen in GTK2's configuration, but instead for GTK3.
 #+begin_src conf-unix :noweb yes
   [Settings]
-  gtk-theme-name=Ant-Dracula
+  gtk-theme-name=Plata-Lumine-Compact
   gtk-icon-theme-name=HighContrast
   gtk-font-name=Iosevka 10
   gtk-cursor-theme-name=Bibata_Ice
