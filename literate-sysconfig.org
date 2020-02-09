@@ -1,4 +1,4 @@
-#+title: Farlado's Illiterate System Configuration
+#+title: Farlado's Illiterate System Configuration 🐉
 #+subtitle: A far-from-sane literate system configuration
 #+author: Farlado
 #+language: en
@@ -349,11 +349,11 @@ I have touched some of it, and haven't touched other parts. Only changes from th
   [Login]
 #+end_src
 
-*** Only two ~tty~ terminals
-I only need two: one for loading an X window session and one for loading one that isn't an X window session.
+*** Only three ~tty~'s
+I only need three: one for loading an X window session, one to generate an Emacs portable dumper image, and one for just loading a shell.
 #+begin_src conf-unix
-  NAutoVTs=2
-  ReserveVT=2
+  NAutoVTs=3
+  ReserveVT=3
 #+end_src
 
 *** Don't suspend on laptop close
