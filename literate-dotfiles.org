@@ -496,7 +496,7 @@ Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-st
 *** Make the background the color of my Emacs background
 This makes Emacs startup look a lot more consistent.
 #+begin_src sh
-  hsetroot -solid "#ffffff"
+  hsetroot -solid "#282a36"
 #+end_src
 
 *** Run the window manager
@@ -511,7 +511,7 @@ In this case, we start Emacs.
    :end:
 These settings apply the theme, cursor, and icons I prefer, along with other preferred visual settings.
 #+begin_src conf-unix :noweb yes
-  gtk-theme-name="Plata-Lumine-Compact"
+  gtk-theme-name="Ant-Dracula"
   gtk-icon-theme-name="HighContrast"
   gtk-font-name="Iosevka 10"
   gtk-cursor-theme-name="Bibata_Ice"
@@ -535,7 +535,7 @@ These settings apply the theme, cursor, and icons I prefer, along with other pre
 This is the exact same settings as seen in GTK2's configuration, but instead for GTK3.
 #+begin_src conf-unix :noweb yes
   [Settings]
-  gtk-theme-name=Plata-Lumine-Compact
+  gtk-theme-name=Ant-Dracula
   gtk-icon-theme-name=HighContrast
   gtk-font-name=Iosevka 10
   gtk-cursor-theme-name=Bibata_Ice
