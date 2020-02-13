@@ -151,11 +151,11 @@ The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my b
 #+end_src
 
 *** Login behavior
-On =tty1=, start X. On =tty2=, run =pdumper.el= to generate a dump image for Emacs.
+On =tty1=, start X. On =tty2=, start the shell normally. On =tty3=, run =pdumper.el= to generate a dump image for Emacs.
 #+begin_src sh
   case $(tty | sed 's/\/dev\/tty//') in
       1) exec startx $XDG_CONFIG_HOME/X11/xinitrc &> /dev/null;;
-      2) exec emacs --batch -q -l $XDG_CONFIG_HOME/emacs/pdumper.el;;
+      3) exec emacs --batch -q -l $XDG_CONFIG_HOME/emacs/pdumper.el;;
   esac
 #+end_src
 
