@@ -155,7 +155,7 @@ On =tty1=, start X. On =tty2=, start the shell normally. On =tty3=, run =pdumper
 #+begin_src sh
   case $(tty | sed 's/\/dev\/tty//') in
       1) exec startx $XDG_CONFIG_HOME/X11/xinitrc &> /dev/null;;
-      3) exec emacs --batch -q -l $XDG_CONFIG_HOME/emacs/pdumper.el;;
+      3) exec emacs --batch -q -l $XDG_CONFIG_HOME/emacs/lisp/pdumper.el;;
   esac
 #+end_src
 
