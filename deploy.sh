@@ -33,10 +33,10 @@ shells="zsh dash"
 audio="pulseaudio pulseaudio-bluetooth pulseaudio-alsa alsa-utils"
 net="bluez bluez-utils networkmanager curl wget"
 emacs="ghostscript aspell aspell-en texlive-most"
-wm="xorg xorg-xinit xorg-drivers hsetroot xbanish xcompmgr arandr nm-connection-editor"
+wm="xorg xorg-xinit xorg-drivers hsetroot xcompmgr arandr nm-connection-editor"
 de="brightnessctl maim xclip i3lock-color"
 looks="bibata-cursor-theme ant-dracula-gtk-theme gnome-themes-extra ttf-iosevka lxappearance-gtk3"
-fonts="ttf-opensans ttf-ubuntu-font-family ttf-liberation ttf-dejavu noto-fonts noto-fonts-extra noto-fonts-emoji otf-ipafont wqy-microhei wqy-zenhei gohufont"
+fonts="ttf-opensans ttf-ubuntu-font-family ttf-liberation ttf-dejavu noto-fonts noto-fonts-extra noto-fonts-emoji otf-ipafont wqy-microhei wqy-zenhei otf-font-awesome"
 apps="firefox libreoffice-fresh musescore gimp telegram-desktop-bin discord mpv transmission-gtk musescore"
 games="vulkan-intel mesa steam xonotic"
 dev="python python-pylint python-jedi hy stack sbcl"
@@ -74,10 +74,10 @@ echo Tangling dotfiles...
 cd $XDG_CONFIG_HOME/dotfiles
 emacs --batch \
       --eval "(require 'org)" \
-      --eval "(setq org-confirm-babel-evaluate nil)" \
-      --eval "(defmacro user-emacs-file (file) (expand-file-name file user-emacs-directory))" \
-      --eval "(defmacro user-home-file (file) (expand-file-name file (getenv \"HOME\")))" \
-      --eval "(defmacro user-config-file (file) (expand-file-name file  (getenv \"XDG_CONFIG_HOME\")))" \
+      --eval '(setq org-confirm-babel-evaluate nil)' \
+      --eval '(defmacro user-emacs-file (file) (expand-file-name file user-emacs-directory))' \
+      --eval '(defmacro user-home-file (file) (expand-file-name file (getenv "HOME")))' \
+      --eval '(defmacro user-config-file (file) (expand-file-name file  (getenv "XDG_CONFIG_HOME")))' \
       --eval '(org-babel-tangle-file "literate-dotfiles.org")'
 
 echo Generating dump image for Emacs...
