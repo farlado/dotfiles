@@ -813,7 +813,7 @@ This menu is mainly supposed to concern things specifically related to ~twm~ or 
       "Screenshot" f.menu "screenshot"
       "" f.nop
       "Discord"  !"discord &"
-      "Emacs"    !"emacsclient -c &"
+      "Emacs"    !"emacs || emacsclient -c &"
       "Firefox"  !"firefox --new-window &"
       "Steam"    !"steam &"
       "Telegram" !"telegram-desktop &"
