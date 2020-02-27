@@ -37,44 +37,74 @@
 #+END_QUOTE
 
 * About this configuration
-This is an attempt at a literate dotfiles configuration. Originally my dotfiles repository was a massive mess of multiple files strewn across multiple directories. Inspired by the success that is [[https://github.com/farlado/dotemacs/][my Emacs configuration]] and the XDG Base Directory Specification, I decided to start condensing my dotfiles into a single ~org-mode~ file tangled into files centered mostly around =$XDG_CONFIG_HOME=, albeit with incredibly mixed results.
+
+  This is an attempt at a literate dotfiles configuration. Originally my
+  dotfiles repository was a massive mess of multiple files strewn across
+  multiple directories. Inspired by the success that is [[https://github.com/farlado/dotemacs/][my Emacs
+  configuration]] and the XDG Base Directory Specification, I decided to start
+  condensing my dotfiles into a single ~org-mode~ file tangled into files centered
+  mostly around =$XDG_CONFIG_HOME=, albeit with incredibly mixed results.
 
 ** Benefits
-Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME= so I now my git repository doesn't sit bare. This means I don't need to use that dumb alias I had anymore. /Emacs dotfiles management, baby./ It also means all my config files are kept in a single place, which means I don't have to dig everywhere for whatever is the matter.
+
+   Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME=
+   so I now my git repository doesn't sit bare. This means I don't need to use
+   that dumb alias I had anymore. /Emacs dotfiles management, baby./ It also means
+   all my config files are kept in a single place, which means I don't have to
+   dig everywhere for whatever is the matter.
 
 ** Limitations
-This repository is still very much a hybrid of literate files and files that very much are not literate. However, it should be possible, so long as these files are placed into the right directories, to end up with a working desktop environment. I also do a lot of system configuration, but it's done in a [[file:literate-sysconfig.org][different file]].
+
+   This repository is still very much a hybrid of literate files and files that
+   very much are not literate. However, it should be possible, so long as these
+   files are placed into the right directories, to end up with a working desktop
+   environment. I also do a lot of system configuration, but it's done in a
+   [[file:literate-sysconfig.org][different file]].
 
 ** About this branch
-Because of the fact I am starting to maintain multiple rices, I now place each one in its own unique repository. The one I use daily will remain the primary branch, but other branches will be created as I give multiple desktop environments and window managers their chances to impress me. This branch in particular is for ~twm~, the /standard/ window manager for X11. It seems rather barebones at first, and certainly looks like an eyesore at a glance, but provides a surprising amount of power and customization.
+
+   Because of the fact I am starting to maintain multiple rices, I now place
+   each one in its own unique repository. The one I use daily will remain the
+   primary branch, but other branches will be created as I give multiple desktop
+   environments and window managers their chances to impress me. This branch in
+   particular is for ~twm~, the /standard/ window manager for X11. It seems rather
+   barebones at first, and certainly looks like an eyesore at a glance, but
+   provides a surprising amount of power and customization.
 
 ** Installation
-1. Clone the repository into its own directory (I personally use =$HOME/.config/dotfiles=)
-2. Run the deploy script within
 
-From a command line, this should look like:
-#+begin_src sh
-  $ git clone https://github.com/farlado/dotfiles $HOME/.config/dotfiles
-  $ $HOME/.config/dotfiles/deploy.sh
-#+end_src
+   1. Clone the repository into its own directory
+      (I personally use =$HOME/.config/dotfiles=)
+   2. Run the deploy script within
+
+   From a command line, this should look like:
+
+   #+begin_src sh
+     $ git clone https://github.com/farlado/dotfiles $HOME/.config/dotfiles
+     $ $HOME/.config/dotfiles/deploy.sh
+   #+end_src
 
 ** License
-Because I +am a lazy piece of shit who doesn't like long licenses+ do not think much harm could come from using a pushover license for dotfiles, I am publishing this literate Emacs configuration under the WTFPL.
-#+begin_src text :tangle (user-config-file "dotfiles/LICENSE")
-  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-  Version 2, December 2004
 
-  Copyright (c) 2019-20 Farlado
+   Because I +am a lazy piece of shit who doesn't like long licenses+ do not think
+   much harm could come from using a pushover license for dotfiles, I am
+   publishing this under the WTFPL.
 
-  Everyone is permitted to copy and distribute verbatim or modified
-  copies of this license document, and changing it is allowed as long
-  as the name is changed.
+   #+begin_src text :tangle (user-config-file "dotfiles/LICENSE")
+     DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+     Version 2, December 2004
 
-             DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+     Copyright (c) 2019-20 Farlado
 
-   0. You just DO WHAT THE FUCK YOU WANT TO.
-#+end_src
+     Everyone is permitted to copy and distribute verbatim or modified
+     copies of this license document, and changing it is allowed as long
+     as the name is changed.
+
+                DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+       TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+      0. You just DO WHAT THE FUCK YOU WANT TO.
+   #+end_src
 
 * On tangle
 ** Making the proper paths
@@ -540,8 +570,8 @@ Currently only GTK2 is here, but as I keep on working on it I'll eventually get 
 *** Set wallpaper
 I'm not entirely tacky.
 #+begin_src sh
-  if [ -f $XDG_CONFIG_HOME/.wallpaper.png ]; then
-      feh --no-fehbg --bg-fill $XDG_CONFIG_HOME/.wallpaper.png
+  if [ -f $XDG_CONFIG_HOME/wallpapers/quotes/sad.jpg ]; then
+      feh --no-fehbg --bg-fill $XDG_CONFIG_HOME/wallpapers/quotes/sad.jpg
   fi
 #+end_src
 
@@ -783,7 +813,7 @@ This menu is mainly supposed to concern things specifically related to ~twm~ or 
       "Screenshot" f.menu "screenshot"
       "" f.nop
       "Discord"  !"discord &"
-      "Emacs"    !"emacsclient -c || emacs $_EMACS_DUMP_FILE &"
+      "Emacs"    !"emacsclient -c &"
       "Firefox"  !"firefox --new-window &"
       "Steam"    !"steam &"
       "Telegram" !"telegram-desktop &"
