@@ -32,10 +32,21 @@
 #+END_QUOTE
 
 * About this configuration
-This is an attempt at a literate dotfiles configuration. Originally my dotfiles repository was a massive mess of multiple files strewn across multiple directories. Inspired by the success that is [[https://github.com/farlado/dotemacs/][my Emacs configuration]] and the XDG Base Directory Specification, I decided to start condensing my dotfiles into a single ~org-mode~ file tangled into files centered mostly around =$XDG_CONFIG_HOME=, albeit with incredibly mixed results.
+
+  This is an attempt at a literate dotfiles configuration. Originally my
+  dotfiles repository was a massive mess of multiple files strewn across
+  multiple directories. Inspired by the success that is [[https://github.com/farlado/dotemacs/][my Emacs configuration]]
+  and the XDG Base Directory Specification, I decided to start condensing my
+  dotfiles into a single ~org-mode~ file tangled into files centered mostly around
+  =$XDG_CONFIG_HOME=, albeit with incredibly mixed results.
 
 ** Benefits
-Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME= so I now my git repository doesn't sit bare. This means I don't need to use that dumb alias I had anymore. /Emacs dotfiles management, baby./ It also means all my config files are kept in a single place, which means I don't have to dig everywhere for whatever is the matter.
+
+   Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME=
+   so I now my git repository doesn't sit bare. This means I don't need to use
+   that dumb alias I had anymore. /Emacs dotfiles management, baby./ It also means
+   all my config files are kept in a single place, which means I don't have to
+   dig everywhere for whatever is the matter.
 
 ** Limitations
 This repository is still very much a hybrid of literate files and files that very much are not literate. However, it should be possible, so long as these files are placed into the right directories, to end up with a working desktop environment. I also do a lot of system configuration, but it's done in a [[file:literate-sysconfig.org][different file]].
@@ -73,788 +84,912 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
 
 * On tangle
 ** Making the proper paths
-In order for tangling to work, the proper paths have to be present. This is done with a hidden block that tangles to a temporary file out in the middle of nowhere. In order to do configurations to Firefox, an additional block is used to run it for a short time to generate profiles.
-#+name: mkdir
-#+begin_src emacs-lisp
-  (dolist (directory '(".cache/zsh"
-                       ".config/mpd"
-                       ".config/X11"
-                       ".config/gtk-2.0"
-                       ".config/gtk-3.0"
-                       ".local/share/zsh"))
-    (make-directory (expand-file-name directory (getenv "HOME")) t))
 
-  (shell-command "sleep 2 && killall firefox & firefox")
-  (make-directory (expand-file-name
-                   "chrome"
-                   (car (file-expand-wildcards
-                         (concat (getenv "HOME")
-                                 "/.mozilla/firefox/*.default-release"))))
-                  t)
-  (setenv "FFDIR" (car (file-expand-wildcards
-                        (concat (getenv "HOME")
-                                "/.mozilla/firefox/*.default-release"))))
-#+end_src
-#+begin_src text :tangle /tmp/dots :noweb yes :exports none
-  <<mkdir()>>
-#+end_src
+   In order for tangling to work, the proper paths have to be present. This is
+   done with a hidden block that tangles to a temporary file out in the middle
+   of nowhere. In order to do configurations to Firefox, an additional block is
+   used to run it for a short time to generate profiles.
+
+   #+name: mkdir
+   #+begin_src emacs-lisp
+     (dolist (directory '(".cache/zsh"
+                          ".config/mpd"
+                          ".config/X11"
+                          ".config/gtk-2.0"
+                          ".config/gtk-3.0"
+                          ".local/share/zsh"))
+       (make-directory (expand-file-name directory (getenv "HOME")) t))
+
+     (shell-command "sleep 2 && killall firefox & firefox")
+     (make-directory (expand-file-name
+                      "chrome"
+                      (car (file-expand-wildcards
+                            (concat (getenv "HOME")
+                                    "/.mozilla/firefox/*.default-release"))))
+                     t)
+     (setenv "FFDIR" (car (file-expand-wildcards
+                           (concat (getenv "HOME")
+                                   "/.mozilla/firefox/*.default-release"))))
+   #+end_src
+
+   #+begin_src text :tangle /tmp/dots :noweb yes :exports none
+     <<mkdir()>>
+   #+end_src
 
 ** Tangling absolute paths
-There are some fields which require absolute paths. This means I have to use some ~noweb~ referencing to get my proper absolute paths. I define all of these references here.
+
+   There are some fields which require absolute paths. This means I have to use
+   some ~noweb~ referencing to get my proper absolute paths. I define all of these
+   references here.
 
 *** =$HOME=
-#+name: HOME
-#+begin_src emacs-lisp
-  (getenv "HOME")
-#+end_src
+
+    #+name: HOME
+    #+begin_src emacs-lisp
+      (getenv "HOME")
+    #+end_src
 
 *** =$XDG_CONFIG_HOME=
-#+name: XDG_CONFIG_HOME
-#+begin_src emacs-lisp
-  (getenv "XDG_CONFIG_HOME")
-#+end_src
+
+    #+name: XDG_CONFIG_HOME
+    #+begin_src emacs-lisp
+      (getenv "XDG_CONFIG_HOME")
+    #+end_src
 
 * Shell
 ** On login (=$HOME/.zprofile=)
    :properties:
    :header-args: :tangle (user-home-file ".zprofile")
    :end:
-The ~.zprofile~ file is sourced before ~.zshrc~ and is kept slim so that whatever kind of session is meant to load is loaded as fast as possible.
+
+   The ~.zprofile~ file is sourced before ~.zshrc~ and is kept slim so that whatever
+   kind of session is meant to load is loaded as fast as possible.
 
 *** Respect XDG Base Directory Specification
-The XDG Base Directory Specification is meant to define where to store configurations, caches, and data for the user. Even /Emacs/ respects this by default now. It cleans up the home directory considerably, but also introduces a cooler side effect: it makes portability a lot easier.
-#+begin_src sh
-  export XDG_DATA_HOME="$HOME/.local/share"
-  export XDG_CONFIG_HOME="$HOME/.config"
-  export XDG_BIN_HOME="$HOME/.local/bin"
-  export XDG_LIB_HOME="$HOME/.local/lib"
-  export XDG_CACHE_HOME="$HOME/.cache"
 
-  export GNUPGHOME="$XDG_CONFIG_HOME/gnupg"
-  export ICEAUTHORITY="$XDG_CONFIG_HOME/ICEauthority"
-#+end_src
+    The XDG Base Directory Specification is meant to define where to store
+    configurations, caches, and data for the user. Even /Emacs/ respects this by
+    default now. It cleans up the home directory considerably, but also
+    introduces a cooler side effect: it makes portability a lot easier.
+
+    #+begin_src sh
+      export XDG_DATA_HOME="$HOME/.local/share"
+      export XDG_CONFIG_HOME="$HOME/.config"
+      export XDG_BIN_HOME="$HOME/.local/bin"
+      export XDG_LIB_HOME="$HOME/.local/lib"
+      export XDG_CACHE_HOME="$HOME/.cache"
+
+      export GNUPGHOME="$XDG_CONFIG_HOME/gnupg"
+      export ICEAUTHORITY="$XDG_CONFIG_HOME/ICEauthority"
+    #+end_src
 
 *** Find an Emacs dump image if exists
-Recently I have started to experiment with using a portable dumper image to load Emacs faster. If one exists, I want to load it.
-#+begin_src sh
-  if [[ -f $XDG_CONFIG_HOME/emacs/emacs.pdmp ]]; then
-      export _EMACS_DUMP_FILE="--dump-file=$XDG_CONFIG_HOME/emacs/emacs.pdmp"
-  fi
-#+end_src
+
+    Recently I have started to experiment with using a portable dumper image to
+    load Emacs faster. If one exists, I want to load it.
+
+    #+begin_src sh
+      if [[ -f $XDG_CONFIG_HOME/emacs/emacs.pdmp ]]; then
+          export _EMACS_DUMP_FILE="--dump-file=$XDG_CONFIG_HOME/emacs/emacs.pdmp"
+      fi
+    #+end_src
 
 *** Set default programs
-The default editor should be ~emacsclient~, as should ~$VISUAL~. Firefox is my browser.
-#+begin_src sh
-  export EDITOR=emacsclient
-  export VISUAL=emacsclient
-  export BROWSER=firefox
-#+end_src
+
+    The default editor should be ~emacsclient~. Firefox is my browser.
+
+    #+begin_src sh
+      export EDITOR=emacsclient
+      export VISUAL=emacsclient
+      export BROWSER=firefox
+    #+end_src
 
 *** Login behavior
-On =tty1=, start X. On =tty2=, start the shell normally. On =tty3=, run =pdumper.el= to generate a dump image for Emacs.
-#+begin_src sh
-  case $(tty | sed 's/\/dev\/tty//') in
-      1) exec startx $XDG_CONFIG_HOME/X11/xinitrc &> /dev/null;;
-      3) exec emacs --batch -q -l $XDG_CONFIG_HOME/emacs/lisp/pdumper.el;;
-  esac
-#+end_src
+
+    On =tty1=, start X. On =tty2=, start the shell normally. On =tty3=, run =pdumper.el=
+    to generate a dump image for Emacs.
+
+    #+begin_src sh
+      case $(tty | sed 's/\/dev\/tty//') in
+          1) exec startx $XDG_CONFIG_HOME/X11/xinitrc &> /dev/null;;
+          3) exec emacs --batch -q -l $XDG_CONFIG_HOME/emacs/lisp/pdumper.el;;
+      esac
+    #+end_src
 
 ** Quiet login (=$HOME/.hushlogin=)
    :properties:
    :header-args: :tangle (user-home-file ".hushlogin")
    :end:
-I don't need to know the last time I logged in, I'd rather the login process be as quiet as possible. This file needs no actual contents, so the block that makes the file is not exported.
-#+begin_src :exports none
-#+end_src
+
+   I don't need to know the last time I logged in, I'd rather the login process
+   be as quiet as possible. This file needs no actual contents, so the block
+   that makes the file is not exported.
+
+   #+begin_src :exports none
+   #+end_src
 
 ** Configuration (=$HOME/.zshrc=)
    :properties:
    :header-args: :tangle (expand-file-name ".zshrc" (getenv "HOME"))
    :end:
-I have come to appreciate what ~zsh~ has to offer, namely its completions and ease of customization.
+
+   I have come to appreciate what ~zsh~ has to offer, namely its completions and
+   ease of customization.
 
 *** Aliases
 **** File management
-- Copying should be interactive
-- Displaying file sizes should be human-readable
-- Displaying disk usage should be human-readable
-- Punish misspelling =ls=
-- Listing directory contents should be colorful
-- Listing all directory contents should be its own command
-- Listing directory contents as a list should be its own command
-- Listing all directory contents as a list should be its own command
-#+begin_src sh
-  alias cp="cp -i"
-  alias du="du -h"
-  alias df="df -h"
-  alias sl="sl -lF"
-  alias ls="ls -h --color=always --group-directories-first"
-  alias lsa="ls -ah --color=always --group-directories-first"
-  alias lsl="ls -lh --color=always --group-directories-first"
-  alias lsal="ls -lah --color=always --group-directories-first"
-#+end_src
+
+     - Copying should be interactive
+     - Displaying file sizes should be human-readable
+     - Displaying disk usage should be human-readable
+     - Punish misspelling =ls=
+     - Listing directory contents should be colorful
+     - Listing all directory contents should be its own command
+     - Listing directory contents as a list should be its own command
+     - Listing all directory contents as a list should be its own command
+
+     #+begin_src sh
+       alias cp="cp -i"
+       alias du="du -h"
+       alias df="df -h"
+       alias ls="ls -h --color=always --group-directories-first"
+       alias lsa="ls -ah --color=always --group-directories-first"
+       alias lsl="ls -lh --color=always --group-directories-first"
+       alias lsal="ls -lah --color=always --group-directories-first"
+     #+end_src
 
 **** System management
-- Getting to the Bluetooth control shell should be easy
-- Showing free memory should be human-readable
-- Doing git commands for dotfiles should be easy
-#+begin_src sh
-  alias bt="bluetoothctl"
-  alias free="free -mh"
-#+end_src
+
+     - Getting to the Bluetooth control shell should be easy
+     - Showing free memory should be human-readable
+
+     #+begin_src sh
+       alias bt="bluetoothctl"
+       alias free="free -mh"
+     #+end_src
 
 *** Completions
 **** Automatically configured
-This was automagically generated the first time I used ~zsh~, and the only time it has needed a change is to store ~zcompdump~ in a more XDG compliant place.
-#+begin_src sh
-  zstyle ':completion:*' completer _list _complete _match _correct _approximate _prefix
-  zstyle ':completion:*' completions 1
-  zstyle ':completion:*' condition 0
-  zstyle ':completion:*' expand prefix suffix
-  zstyle ':completion:*' file-sort name
-  zstyle ':completion:*' format '%d'
-  zstyle ':completion:*' group-name ''
-  zstyle ':completion:*' ignore-parents parent pwd directory
-  zstyle ':completion:*' insert-unambiguous true
-  zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-  zstyle ':completion:*' list-prompt '%SAt %p: Hit TAB for more, or the character to insert%s'
-  zstyle ':completion:*' list-suffixes true
-  zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|[._-]=** r:|=**'
-  zstyle ':completion:*' max-errors 3
-  zstyle ':completion:*' menu select=5
-  zstyle ':completion:*' original true
-  zstyle ':completion:*' preserve-prefix '//[^/]##/'
-  zstyle ':completion:*' prompt '%e possible errors'
-  zstyle ':completion:*' select-prompt '%SScrolling active: current selection at %p%s'
-  zstyle ':completion:*' squeeze-slashes true
-  zstyle ':completion:*' substitute 1
-  zstyle ':completion:*' verbose false
-  zstyle ':completion:*' word true
-  zstyle :compinstall filename "$HOME/.zshrc"
 
-  autoload -Uz compinit colors zcalc
-  compinit -d $XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION
-  colors
-#+end_src
+     This was automagically generated the first time I used ~zsh~, and the only
+     time it has needed a change is storing ~zcompdump~ in an XDG compliant place.
+
+     #+begin_src sh
+       zstyle ':completion:*' completer _list _complete _match _correct _approximate _prefix
+       zstyle ':completion:*' completions 1
+       zstyle ':completion:*' condition 0
+       zstyle ':completion:*' expand prefix suffix
+       zstyle ':completion:*' file-sort name
+       zstyle ':completion:*' format '%d'
+       zstyle ':completion:*' group-name ''
+       zstyle ':completion:*' ignore-parents parent pwd directory
+       zstyle ':completion:*' insert-unambiguous true
+       zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+       zstyle ':completion:*' list-prompt '%SAt %p: Hit TAB for more, or the character to insert%s'
+       zstyle ':completion:*' list-suffixes true
+       zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|[._-]=** r:|=**'
+       zstyle ':completion:*' max-errors 3
+       zstyle ':completion:*' menu select=5
+       zstyle ':completion:*' original true
+       zstyle ':completion:*' preserve-prefix '//[^/]##/'
+       zstyle ':completion:*' prompt '%e possible errors'
+       zstyle ':completion:*' select-prompt '%SScrolling active: current selection at %p%s'
+       zstyle ':completion:*' squeeze-slashes true
+       zstyle ':completion:*' substitute 1
+       zstyle ':completion:*' verbose false
+       zstyle ':completion:*' word true
+       zstyle :compinstall filename "$HOME/.zshrc"
+
+       autoload -Uz compinit colors zcalc
+       compinit -d $XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION
+       colors
+     #+end_src
 
 **** Additional options
-Some other settings I like to keep enabled:
-- Command spelling correction (=correct=)
-- Case-insensitive globbing (=nocaseglob=)
-- Smart parameter expansion (=rcexpandparam=)
-- Numeric glob sorting (=numbericglobsort=)
-- Parameter expansion in the prompt (=prompt_subst=)
-#+begin_src sh
-  setopt correct
-  setopt nocaseglob
-  setopt rcexpandparam
-  setopt numericglobsort
-  setopt prompt_subst
-#+end_src
+
+     Some other settings I like to keep enabled:
+     - Command spelling correction (=correct=)
+     - Case-insensitive globbing (=nocaseglob=)
+     - Smart parameter expansion (=rcexpandparam=)
+     - Numeric glob sorting (=numbericglobsort=)
+     - Parameter expansion in the prompt (=prompt_subst=)
+
+     #+begin_src sh
+       setopt correct
+       setopt nocaseglob
+       setopt rcexpandparam
+       setopt numericglobsort
+       setopt prompt_subst
+     #+end_src
 
 *** History file
-I like keeping a history file, just in case I need to look up a command I ran in the past. It's stored in a place where it keeps XDG compliance. for safe keeping. Append to history instead of overwriting (=appendhistory=), removing all duplicates (=histignorealldups=).
-#+begin_src sh
-  HISTFILE=$XDG_DATA_HOME/zsh/history
-  HISTSIZE=1000
-  SAVEHIST=2000
-  setopt appendhistory
-  setopt histignorealldups
-#+end_src
+
+    I like keeping a history file, just in case I need to look up a command I
+    ran in the past. It's stored in a place where it keeps XDG compliance. for
+    safe keeping. Append to history instead of overwriting (=appendhistory=),
+    removing all duplicates (=histignorealldups=).
+
+    #+begin_src sh
+      HISTFILE=$XDG_DATA_HOME/zsh/history
+      HISTSIZE=1000
+      SAVEHIST=2000
+      setopt appendhistory
+      setopt histignorealldups
+    #+end_src
 
 *** Key bindings
-For some reason, by default ~zsh~ doesn't have keys properly set up. For this reason, I need to define some keys and what they do, and assign Emacs key behavior.
-#+begin_src sh
-  bindkey -e
-  bindkey "\e[1~" beginning-of-line
-  bindkey "\e[4~" end-of-line
-  bindkey "\e[5~" beginning-of-history
-  bindkey "\e[6~" end-of-history
-  bindkey "\e[3~" delete-char
-  bindkey "\e[2~" quoted-insert
-  bindkey "\e[5C" forward-word
-  bindkey "\eOc" emacs-forward-word
-  bindkey "\e[5D" backward-word
-  bindkey "\eOd" emacs-backward-word
-  bindkey "\e[1;5C" forward-word
-  bindkey "\e[1;5D" backward-word
-  bindkey "^H" backward-delete-word
-  # for rxvt
-  bindkey "\e[8~" end-of-line
-  bindkey "\e[7~" beginning-of-line
-  # for non RH/Debian xterm, can't hurt for RH/DEbian xterm
-  bindkey "\eOH" beginning-of-line
-  bindkey "\eOF" end-of-line
-  # for freebsd console
-  bindkey "\e[H" beginning-of-line
-  bindkey "\e[F" end-of-line
-#+end_src
+
+    For some reason, by default ~zsh~ doesn't have keys properly set up. For this
+    reason, I need to define some keys and what they do, and assign Emacs key
+    behavior.
+
+    #+begin_src sh
+      bindkey -e
+      bindkey "\e[1~" beginning-of-line
+      bindkey "\e[4~" end-of-line
+      bindkey "\e[5~" beginning-of-history
+      bindkey "\e[6~" end-of-history
+      bindkey "\e[3~" delete-char
+      bindkey "\e[2~" quoted-insert
+      bindkey "\e[5C" forward-word
+      bindkey "\eOc" emacs-forward-word
+      bindkey "\e[5D" backward-word
+      bindkey "\eOd" emacs-backward-word
+      bindkey "\e[1;5C" forward-word
+      bindkey "\e[1;5D" backward-word
+      bindkey "^H" backward-delete-word
+      # for rxvt
+      bindkey "\e[8~" end-of-line
+      bindkey "\e[7~" beginning-of-line
+      # for non RH/Debian xterm, can't hurt for RH/DEbian xterm
+      bindkey "\eOH" beginning-of-line
+      bindkey "\eOF" end-of-line
+      # for freebsd console
+      bindkey "\e[H" beginning-of-line
+      bindkey "\e[F" end-of-line
+    #+end_src
 
 *** Setting the prompt
-It's a dumb fancy-looking prompt. That's about all there is to say about it. What follows afterward is how git status is added to the prompt.
-#+begin_src sh
-  export PS1=$'%(?.%{\033[0;34m%}.\033[0;31m%})┌%{\033[1;32m%}%n%{\033[0;37m%}%b@%{\033[1;31m%}%m%{\033[1;34m%}[%{\033[1;35m%}%c%{\033[1;34m%}]$(git_prompt_string)%{$fg_bold[red]%}%(?..[%b%{$fg[red]%}%?%{$fg_bold[red]%}])\n%(?.%{\033[0;34m%}.%{\033[0;31m%})└%{\033[0m%}%(!.#.$) '
-#+end_src
+
+    It's a dumb fancy-looking prompt. That's about all there is to say about it.
+    What follows afterward is how git status is added to the prompt.
+
+    #+begin_src sh
+      export PS1=$'%(?.%{\033[0;34m%}.\033[0;31m%})┌%{\033[1;32m%}%n%{\033[0;37m%}%b@%{\033[1;31m%}%m%{\033[1;34m%}[%{\033[1;35m%}%c%{\033[1;34m%}]$(git_prompt_string)%{$fg_bold[red]%}%(?..[%b%{$fg[red]%}%?%{$fg_bold[red]%}])\n%(?.%{\033[0;34m%}.%{\033[0;31m%})└%{\033[0m%}%(!.#.$) '
+    #+end_src
 
 *** Git status in the prompt
-When managing git repositories, I want extra information in the prompt. I genuinely forget where I found this snippet, but it's of much use.
+
+    When managing git repositories, I want extra information in the prompt. I
+    genuinely forget where I found this snippet, but it's of much use.
 
 **** Assigning symbols and colors
-This block assigns, respectively:
-- The symbol to open a block with git information
-- The symbol to close a block with git information
-- The symbol to divide blocks with git information
-- The symbol for the number of commits ahead
-- The symbol for the number of commits behind
-- The symbol for merge conflicts
-- The symbol for untracked files
-- The symbol for modified tracked files
-- The symbol for staged changes present
-#+begin_src sh
-  GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}[%{$reset_color%}"
-  GIT_PROMPT_SUFFIX="%{$fg_bold[blue]%}]%{$reset_color%}"
-  GIT_PROMPT_SYMBOL="%{$fg_bold[blue]%}="
-  GIT_PROMPT_AHEAD="%{$fg[cyan]%}+NUM%{$reset_color%}"
-  GIT_PROMPT_BEHIND="%{$fg[red]%}-NUM%{$reset_color%}"
-  GIT_PROMPT_MERGING="%{$fg_bold[magenta]%}!%{$reset_color%}"
-  GIT_PROMPT_UNTRACKED="%{$fg_bold[red]%}?%{$reset_color%}"
-  GIT_PROMPT_MODIFIED="%{$fg_bold[yellow]%}?%{$reset_color%}"
-  GIT_PROMPT_STAGED="%{$fg_bold[green]%}+%{$reset_color%}"
-#+end_src
+
+     This block assigns, respectively:
+     - The symbol to open a block with git information
+     - The symbol to close a block with git information
+     - The symbol to divide blocks with git information
+     - The symbol for the number of commits ahead
+     - The symbol for the number of commits behind
+     - The symbol for merge conflicts
+     - The symbol for untracked files
+     - The symbol for modified tracked files
+     - The symbol for staged changes present
+
+     #+begin_src sh
+       GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}[%{$reset_color%}"
+       GIT_PROMPT_SUFFIX="%{$fg_bold[blue]%}]%{$reset_color%}"
+       GIT_PROMPT_SYMBOL="%{$fg_bold[blue]%}="
+       GIT_PROMPT_AHEAD="%{$fg[cyan]%}+NUM%{$reset_color%}"
+       GIT_PROMPT_BEHIND="%{$fg[red]%}-NUM%{$reset_color%}"
+       GIT_PROMPT_MERGING="%{$fg_bold[magenta]%}!%{$reset_color%}"
+       GIT_PROMPT_UNTRACKED="%{$fg_bold[red]%}?%{$reset_color%}"
+       GIT_PROMPT_MODIFIED="%{$fg_bold[yellow]%}?%{$reset_color%}"
+       GIT_PROMPT_STAGED="%{$fg_bold[green]%}+%{$reset_color%}"
+     #+end_src
 
 **** Parse the current git branch
-Get the current branch or the name-rev if on a detached head.
-#+begin_src sh
-  parse_git_branch() {
-      ( git symbolic-ref -q HEAD || git name-rev --name-only --no-undefined --always HEAD ) 2> /dev/null
-  }
-#+end_src
+
+     Get the current branch or the name-rev if on a detached head.
+
+     #+begin_src sh
+       parse_git_branch() {
+           ( git symbolic-ref -q HEAD || git name-rev --name-only --no-undefined --always HEAD ) 2> /dev/null
+       }
+     #+end_src
 
 **** Parse the current git state
-This is where the actual state of the git repository is determined, and returned as a string.
-#+begin_src sh
-  parse_git_state() {
-      # Show different symbols as appropriate for various Git repository states
-      # Compose this value via multiple conditional appends.
-      local GIT_STATE=""
-      local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
-      if [ "$NUM_AHEAD" -gt 0 ]; then
-          GIT_STATE=$GIT_STATE${GIT_PROMPT_AHEAD//NUM/$NUM_AHEAD}
-      fi
-      local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
-      if [ "$NUM_BEHIND" -gt 0 ]; then
-          GIT_STATE=$GIT_STATE${GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
-      fi
-      local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
-      if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
-          GIT_STATE=$GIT_STATE$GIT_PROMPT_MERGING
-      fi
-      if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
-          GIT_STATE=$GIT_STATE$GIT_PROMPT_UNTRACKED
-      fi
-      if ! git diff --quiet 2> /dev/null; then
-          GIT_STATE=$GIT_STATE$GIT_PROMPT_MODIFIED
-      fi
-      if ! git diff --cached --quiet 2> /dev/null; then
-          GIT_STATE=$GIT_STATE$GIT_PROMPT_STAGED
-      fi
-      if [[ -n $GIT_STATE ]]; then
-          echo "$GIT_PROMPT_PREFIX$GIT_STATE$GIT_PROMPT_SUFFIX"
-      fi
-  }
-#+end_src
+
+     This is where the actual state of the git repository is determined, and
+     returned as a string.
+
+     #+begin_src sh
+       parse_git_state() {
+           # Show different symbols as appropriate for various Git repository states
+           # Compose this value via multiple conditional appends.
+           local GIT_STATE=""
+           local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
+           if [ "$NUM_AHEAD" -gt 0 ]; then
+               GIT_STATE=$GIT_STATE${GIT_PROMPT_AHEAD//NUM/$NUM_AHEAD}
+           fi
+           local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
+           if [ "$NUM_BEHIND" -gt 0 ]; then
+               GIT_STATE=$GIT_STATE${GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
+           fi
+           local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
+           if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
+               GIT_STATE=$GIT_STATE$GIT_PROMPT_MERGING
+           fi
+           if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
+               GIT_STATE=$GIT_STATE$GIT_PROMPT_UNTRACKED
+           fi
+           if ! git diff --quiet 2> /dev/null; then
+               GIT_STATE=$GIT_STATE$GIT_PROMPT_MODIFIED
+           fi
+           if ! git diff --cached --quiet 2> /dev/null; then
+               GIT_STATE=$GIT_STATE$GIT_PROMPT_STAGED
+           fi
+           if [[ -n $GIT_STATE ]]; then
+               echo "$GIT_PROMPT_PREFIX$GIT_STATE$GIT_PROMPT_SUFFIX"
+           fi
+       }
+     #+end_src
 
 **** Return a string for the prompt
-Finally, if when writing the prompt a git branch is found, return a string with the git state and git branch.
-#+begin_src sh
-  git_prompt_string() {
-      local git_where="$(parse_git_branch)"
-      [ -n "$git_where" ] && echo "$GIT_PROMPT_SYMBOL$(parse_git_state)$GIT_PROMPT_PREFIX%{$fg[magenta]%}${git_where#(refs/heads/|tags/)}$GIT_PROMPT_SUFFIX"
-  }
-#+end_src
+
+     Finally, if when writing the prompt a git branch is found, return a string
+     with the git state and git branch.
+
+     #+begin_src sh
+       git_prompt_string() {
+           local git_where="$(parse_git_branch)"
+           [ -n "$git_where" ] && echo "$GIT_PROMPT_SYMBOL$(parse_git_state)$GIT_PROMPT_PREFIX%{$fg[magenta]%}${git_where#(refs/heads/|tags/)}$GIT_PROMPT_SUFFIX"
+       }
+     #+end_src
 
 *** When Emacs is the terminal
-There is an Emacs package called ~vterm~ which allows use of Emacs as a fully-featured terminal emulator. There are a number of features which require configuration in the shell.
-#+begin_src sh :noweb yes
-  if [ "$INSIDE_EMACS" = "vterm" ]; then
-      <<vprintf>>
-      <<clear>>
-      <<vim>>
-  fi
-#+end_src
+
+    There is an Emacs package called ~vterm~ which allows use of Emacs as a 
+    fully-featured terminal emulator. There are a number of features which
+    require configuration in the shell.
+
+    #+begin_src sh :noweb yes
+      if [ "$INSIDE_EMACS" = "vterm" ]; then
+          <<vprintf>>
+          <<clear>>
+          <<vim>>
+      fi
+    #+end_src
 
 **** Push Emacs commands from ~vterm~
-This allows me to clear scrollback easily.
-#+name: vprintf
-#+begin_src sh :tangle no
-  function vterm_printf(){
-      if [ -n "$TMUX" ]; then
-          printf "\ePtmux;\e\e]%s\007\e\\" "$1"
-      elif [ "${TERM%%-*}" = "screen" ]; then
-          # GNU screen (screen, screen-256color, screen-256color-bce)
-          printf "\eP\e]%s\007\e\\" "$1"
-      else
-          printf "\e]%s\e\\" "$1"
-      fi
-  }
-#+end_src
+
+     This allows me to clear scrollback easily.
+
+     #+name: vprintf
+     #+begin_src sh :tangle no
+       function vterm_printf(){
+           if [ -n "$TMUX" ]; then
+               printf "\ePtmux;\e\e]%s\007\e\\" "$1"
+           elif [ "${TERM%%-*}" = "screen" ]; then
+               # GNU screen (screen, screen-256color, screen-256color-bce)
+               printf "\eP\e]%s\007\e\\" "$1"
+           else
+               printf "\e]%s\e\\" "$1"
+           fi
+       }
+     #+end_src
 
 **** Clear all scrollback when clearing
-This is why we enable pushing Emacs commands from ~vterm~.
-#+name: clear
-#+begin_src sh :tangle no
-  alias clear='vterm_printf "51;Evterm-clear-scrollback";tput clear'
-#+end_src
+
+     This is why we enable pushing Emacs commands from ~vterm~.
+
+     #+name: clear
+     #+begin_src sh :tangle no
+       alias clear='vterm_printf "51;Evterm-clear-scrollback";tput clear'
+     #+end_src
 
 **** "Alias" ~vim~ into ~emacsclient~
-I can't get over old muscle memory, even after months of using Emacs. Typing ~vim~ in the terminal to edit files is only natural, so I set up a proper function to call ~emacsclient~ when I type ~vim~.
-#+name: vim
-#+begin_src sh :tangle no
-  function vim() {
-      [ "$@" ] && {
-          emacsclient $@
-      } || {
-          echo "Please give an argument or filename."
-          return 1
-      }
-  }
-#+end_src
+
+     I can't get over old muscle memory, even after months of using Emacs.
+     Typing ~vim~ in the terminal to edit files is only natural, so I set up a
+     proper function to call ~emacsclient~ when I type ~vim~.
+
+     #+name: vim
+     #+begin_src sh :tangle no
+       function vim() {
+           [ "$@" ] && {
+               emacsclient $@
+           } || {
+               echo "Please give an argument or filename."
+               return 1
+           }
+       }
+     #+end_src
 
 *** Syntax highlighting in the shell
-It's subtle, but it makes a world of difference in knowing whether I am entering a command properly.
-#+begin_src sh
-  source $XDG_CONFIG_HOME/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-  ZSH_HIGHLIGHT_HIGHLIGHTERS=(main root regexp brackets pattern)
-#+end_src
+
+    It's subtle, but it makes a world of difference in knowing whether I am
+    entering a command properly.
+
+    #+begin_src sh
+      source $XDG_CONFIG_HOME/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+      ZSH_HIGHLIGHT_HIGHLIGHTERS=(main root regexp brackets pattern)
+    #+end_src
 
 *** Tangling a literate ~org-mode~ file
-This is necessary for multiple reasons, but most notably so for tangling this specific file. I need to define a few macros and load ~org~ before I can tangle, though. We also skip all confirmation for evaluating. I also set up one for doing things with superuser privileges.
-#+begin_src sh
-  function orgtangle() {
-      [[ ! -n $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
-      emacs --batch \
-            --eval "(require 'org)" \
-            --eval "(setq org-confirm-babel-evaluate nil)" \
-            --eval "(defmacro user-emacs-file (file)
-                      (expand-file-name file user-emacs-directory))" \
-            --eval "(defmacro user-home-file (file)
-                      (expand-file-name file (getenv \"HOME\")))" \
-            --eval "(defmacro user-config-file (file)
-                      (expand-file-name file (getenv \"XDG_CONFIG_HOME\")))" \
-            --eval "(org-babel-tangle-file \"$1\")"
-  }
 
-  function orgtanglesudo() {
-      sudo emacs --batch \
-                 --eval "(require 'org)" \
-                 --eval "(setq org-confirm-babel-evaluate nil)" \
-                 --eval "(defmacro user-emacs-file (file)
-                           (expand-file-name file user-emacs-directory))" \
-                 --eval "(defmacro user-home-file (file)
-                           (expand-file-name file (getenv \"HOME\")))" \
-                 --eval "(defmacro user-config-file (file)
-                           (expand-file-name file (getenv \"XDG_CONFIG_HOME\")))" \
-                 --eval "(org-babel-tangle-file \"$1\")"
-  }
-#+end_src
+    This is necessary for multiple reasons, but most notably so for tangling
+    this specific file. I need to define a few macros and load ~org~ before I can
+    tangle, though. We also skip all confirmation for evaluating. I also set up
+    one for doing things with superuser privileges.
+
+    #+begin_src sh
+      function orgtangle() {
+          [[ ! -n $XDG_CONFIG_HOME ]] && export XDG_CONFIG_HOME="$HOME/.config"
+          emacs --batch \
+                --eval "(require 'org)" \
+                --eval "(setq org-confirm-babel-evaluate nil)" \
+                --eval "(defmacro user-emacs-file (file)
+                          (expand-file-name file user-emacs-directory))" \
+                --eval "(defmacro user-home-file (file)
+                          (expand-file-name file (getenv \"HOME\")))" \
+                --eval "(defmacro user-config-file (file)
+                          (expand-file-name file (getenv \"XDG_CONFIG_HOME\")))" \
+                --eval "(org-babel-tangle-file \"$1\")"
+      }
+
+      function orgtanglesudo() {
+          sudo emacs --batch \
+                     --eval "(require 'org)" \
+                     --eval "(setq org-confirm-babel-evaluate nil)" \
+                     --eval "(defmacro user-emacs-file (file)
+                               (expand-file-name file user-emacs-directory))" \
+                     --eval "(defmacro user-home-file (file)
+                               (expand-file-name file (getenv \"HOME\")))" \
+                     --eval "(defmacro user-config-file (file)
+                               (expand-file-name file (getenv \"XDG_CONFIG_HOME\")))" \
+                     --eval "(org-babel-tangle-file \"$1\")"
+      }
+    #+end_src
 
 *** Show a fetch on startup
-This is just a point of personal aesthetic preference. I like having some kind of little display pop up when I start a terminal.
-#+begin_src sh
-  ufetch
-#+end_src
+
+    This is just a point of personal aesthetic preference. I like having some
+    kind of little display pop up when I start a terminal.
+
+    #+begin_src sh
+      ufetch
+    #+end_src
 
 * X session
 ** Starting X (=X11/xinitrc=)
   :properties:
   :header-args: :tangle (user-config-file "X11/xinitrc")
   :end:
-Emacs is my daily-driver desktop. This file is relatively minimal since most configuration is done in Emacs itself.
+
+  Emacs is my daily-driver desktop. This file is relatively minimal since most
+  configuration is done in Emacs itself.
 
 *** Force 1080p on my W541 displays
-Because I limit the resolution to 1080p but my W541 wants to display 3K, I need to force it. The displays I dock to also need configuration.
-#+begin_src sh
-  xrandr | grep 'DP2-1 connected' 1> /dev/null 2>/dev/null && {
-      xrandr --output eDP1 --off \
-             --output DP2-1 --mode 1920x1080 --rotate left --pos 0x0 \
-             --output DP2-2 --primary --rate 75 --mode 1920x1080 --pos 1080x0 \
-             --output DP2-3 --mode 1920x1080 --rotate right --pos 3000x0
-  } || {
-      xrandr --output eDP1 --primary --mode 1920x1080 --pos 0x0 \
-             --output DP2-1 --off \
-             --output DP2-2 --off \
-             --output DP2-3 --off
-  }
-#+end_src
+
+    Because I limit the resolution to 1080p but my W541 wants to display 3K, I
+    need to force it. The displays I dock to also need configuration.
+
+    #+begin_src sh
+      xrandr | grep 'DP2-1 connected' 1> /dev/null 2>/dev/null && {
+          xrandr --output eDP1 --off \
+                 --output DP2-1 --mode 1920x1080 --rotate left --pos 0x0 \
+                 --output DP2-2 --primary --rate 75 --mode 1920x1080 --pos 1080x0 \
+                 --output DP2-3 --mode 1920x1080 --rotate right --pos 3000x0
+      } || {
+          xrandr --output eDP1 --primary --mode 1920x1080 --pos 0x0 \
+                 --output DP2-1 --off \
+                 --output DP2-2 --off \
+                 --output DP2-3 --off
+      }
+    #+end_src
 
 *** Set an environment variable for the window manager
-Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-startup-3][my Emacs configuration]] I use the environment variable ~_RUN_EXWM~ to signal to Emacs that it should run as my desktop environment.
-#+begin_src sh
-  export _RUN_EXWM=1
-#+end_src
+
+    Emacs is my desktop environment. In [[https://github.com/farlado/dotemacs/#on-startup-3][my Emacs configuration]] I use the
+    environment variable ~_RUN_EXWM~ to signal to Emacs that it should run as my
+    desktop environment.
+
+    #+begin_src sh
+      export _RUN_EXWM=1
+    #+end_src
 
 *** Make the background the color of my Emacs background
-This makes Emacs startup look a lot more consistent.
-#+begin_src sh
-  hsetroot -solid "#282a36"
-#+end_src
+
+    This makes Emacs startup look a lot more consistent.
+
+    #+begin_src sh
+      hsetroot -solid "#282a36"
+    #+end_src
 
 *** Run the window manager
-In this case, we start Emacs.
-#+begin_src sh
-  exec emacs $_EMACS_DUMP_FILE
-#+end_src
+
+    In this case, we start Emacs.
+
+    #+begin_src sh
+      exec emacs $_EMACS_DUMP_FILE
+    #+end_src
 
 ** GTK2 Appearance (=gtk-2.0/gtkrc=)
    :properties:
    :header-args: :tangle (user-config-file "gtk-2.0/gtkrc")
    :end:
-These settings apply the theme, cursor, and icons I prefer, along with other preferred visual settings.
-#+begin_src conf-unix :noweb yes
-  gtk-theme-name="Ant-Dracula"
-  gtk-icon-theme-name="HighContrast"
-  gtk-font-name="Iosevka 10"
-  gtk-cursor-theme-name="Bibata_Ice"
-  gtk-cursor-theme-size=0
-  gtk-toolbar-style=GTK_TOOLBAR_BOTH
-  gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
-  gtk-button-images=1
-  gtk-menu-images=1
-  gtk-enable-event-sounds=0
-  gtk-enable-input-feedback-sounds=0
-  gtk-xft-antialias=1
-  gtk-xft-hinting=1
-  gtk-xft-hintstyle="hintfull"
-  gtk-xft-rgba="rgb"
-#+end_src
+
+   These settings apply the theme, cursor, and icons I prefer, along with other
+   preferred visual settings. Some size values determined [[#tangling-the-right-size-values][above]].
+
+   #+begin_src conf-unix :noweb yes
+     gtk-theme-name="Ant-Dracula"
+     gtk-icon-theme-name="HighContrast"
+     gtk-font-name="Iosevka 10"
+     gtk-cursor-theme-name="Bibata_Ice"
+     gtk-cursor-theme-size=0
+     gtk-toolbar-style=GTK_TOOLBAR_BOTH
+     gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
+     gtk-button-images=1
+     gtk-menu-images=1
+     gtk-enable-event-sounds=0
+     gtk-enable-input-feedback-sounds=0
+     gtk-xft-antialias=1
+     gtk-xft-hinting=1
+     gtk-xft-hintstyle="hintfull"
+     gtk-xft-rgba="rgb"
+   #+end_src
 
 ** GTK3 appearance (=gtk-3.0/settings.ini=)
    :properties:
    :header-args: :tangle (user-config-file "gtk-3.0/settings.ini")
    :end:
-This is the exact same settings as seen in GTK2's configuration, but instead for GTK3.
-#+begin_src conf-unix :noweb yes
-  [Settings]
-  gtk-theme-name=Ant-Dracula
-  gtk-icon-theme-name=HighContrast
-  gtk-font-name=Iosevka 10
-  gtk-cursor-theme-name=Bibata_Ice
-  gtk-cursor-theme-size=0
-  gtk-toolbar-style=GTK_TOOLBAR_BOTH
-  gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
-  gtk-button-images=1
-  gtk-menu-images=1
-  gtk-enable-event-sounds=0
-  gtk-enable-input-feedback-sounds=0
-  gtk-xft-antialias=1
-  gtk-xft-hinting=1
-  gtk-xft-hintstyle=hintfull
-  gtk-xft-rgba=rgb
-#+end_src
+
+   This is the exact same settings as seen in [[#gtk2-appearance-gtkrc][GTK2's configuration]], but instead
+   for GTK3. This also includes the size values determined [[#tangling-the-right-size-values][above]].
+
+   #+begin_src conf-unix :noweb yes
+     [Settings]
+     gtk-theme-name=Ant-Dracula
+     gtk-icon-theme-name=HighContrast
+     gtk-font-name=Iosevka 10
+     gtk-cursor-theme-name=Bibata_Ice
+     gtk-cursor-theme-size=0
+     gtk-toolbar-style=GTK_TOOLBAR_BOTH
+     gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
+     gtk-button-images=1
+     gtk-menu-images=1
+     gtk-enable-event-sounds=0
+     gtk-enable-input-feedback-sounds=0
+     gtk-xft-antialias=1
+     gtk-xft-hinting=1
+     gtk-xft-hintstyle=hintfull
+     gtk-xft-rgba=rgb
+   #+end_src
 
 * Music player (=mpd/mpd.conf=)
   :properties:
   :header-args: :tangle (user-config-file "mpd/mpd.conf")
   :end:
-I use ~mpd~ simply out of ease of use, since it interfaces well with EMMS on Emacs.
+
+  I use ~mpd~, since it interfaces well with EMMS on Emacs.
 
 *** Setting proper directories
-This section requires absolute paths, which are tangled using ~noweb~ references as defined [[#tangling-absolute-paths][above]].
-- Music and playlists should be in =$HOME/Music=
-- The database, log file, PID file, and state file should all be in =$XDG_CONFIG_HOME/mpd=
-#+begin_src conf-space :noweb yes
-  music_directory "<<HOME()>>/Music"
-  playlist_directory "<<HOME()>>/Music"
-  db_file "<<XDG_CONFIG_HOME()>>/mpd/mpd.db"
-  log_file "<<XDG_CONFIG_HOME()>>/mpd/mpd.log"
-  pid_file "<<XDG_CONFIG_HOME()>>/mpd/mpd.pid"
-  state_file "<<XDG_CONFIG_HOME()>>/mpd/mpdstate"
-#+end_src
+
+    This section requires absolute paths, which are tangled using ~noweb~
+    references as defined [[#tangling-absolute-paths][above]].
+    - Music and playlists should be in =$HOME/Music=
+    - The database, log file, PID file, and state file should all be in
+      =$XDG_CONFIG_HOME/mpd=
+
+    #+begin_src conf-space :noweb yes
+      music_directory "<<HOME()>>/Music"
+      playlist_directory "<<HOME()>>/Music"
+      db_file "<<XDG_CONFIG_HOME()>>/mpd/mpd.db"
+      log_file "<<XDG_CONFIG_HOME()>>/mpd/mpd.log"
+      pid_file "<<XDG_CONFIG_HOME()>>/mpd/mpd.pid"
+      state_file "<<XDG_CONFIG_HOME()>>/mpd/mpdstate"
+    #+end_src
 
 *** Setting the output interface
-I want to use my speakers for this.
-#+begin_src conf-space
-  audio_output {
-          type "pulse"
-          name "pulse audio"
-  }
-#+end_src
+
+    #+begin_src conf-space
+      audio_output {
+              type "pulse"
+              name "pulse audio"
+      }
+    #+end_src
 
 *** Use the right address and port
-This is a local instance
-#+begin_src conf-space
-  bind_to_address "127.0.0.1"
-  port "6601"
-#+end_src
+
+    This is a local instance
+
+    #+begin_src conf-space
+      bind_to_address "127.0.0.1"
+      port "6601"
+    #+end_src
 
 * Web browser (Firefox)
-Much human intervention is still required of this part of the configuration:
-- Extensions do not automatically install.
-- Configuration of the ad blocker is not automatic.
-- Some website specific settings cannot be set here.
+
+  Much human intervention is still required of this part of the configuration:
+  - Extensions do not automatically install.
+  - Configuration of the ad blocker is not automatic.
+  - Some website specific settings cannot be set here.
 
 ** Disabling tabs (=chrome/userChrome.css=)
-Since Emacs manages my windows as buffers, it makes no sense to have multiple tabs per single buffer. Part of this involves removing the tab bar.
-#+begin_src css :tangle (expand-file-name "chrome/userChrome.css" (getenv "FFDIR"))
-  #TabsToolbar { visibility: collapse !important; }
-#+end_src
+
+   I got used to managing single browser windows thanks to EXWM. I still can't
+   go back to having tabs when surfing the web.
+
+   #+begin_src css :tangle (expand-file-name "chrome/userChrome.css" (getenv "FFDIR"))
+     #TabsToolbar { visibility: collapse !important; }
+   #+end_src
 
 ** Respecting additional settings (=user.js=)
-Since I change a lot of settings, I just spill this verbatim. It's not actually shown because it's not all that special.
-#+begin_src js :exports none :tangle (expand-file-name "user.js" (getenv "FFDIR"))
-  user_pref("app.shield.optoutstudies.enabled", true);
-  user_pref("browser.aboutConfig.showWarning", false);
-  user_pref("browser.contentblocking.category", "strict");
-  user_pref("browser.ctrlTab.recentlyUsedOrder", false);
-  user_pref("browser.laterrun.enabled", true);
-  user_pref("browser.link.open_newwindow", 2);
-  user_pref("browser.migration.version", 89);
-  user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", false);
-  user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features", false);
-  user_pref("browser.newtabpage.activity-stream.feeds.section.highlights", false);
-  user_pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
-  user_pref("browser.newtabpage.activity-stream.feeds.snippets", false);
-  user_pref("browser.newtabpage.activity-stream.feeds.topsites", false);
-  user_pref("browser.newtabpage.activity-stream.section.highlights.includeBookmarks", false);
-  user_pref("browser.newtabpage.activity-stream.section.highlights.includeDownloads", false);
-  user_pref("browser.newtabpage.activity-stream.section.highlights.includePocket", false);
-  user_pref("browser.newtabpage.activity-stream.section.highlights.includeVisited", false);
-  user_pref("browser.newtabpage.activity-stream.showSearch", false);
-  user_pref("browser.newtabpage.activity-stream.showSponsored", false);
-  user_pref("browser.newtabpage.enabled", false);
-  user_pref("browser.search.suggest.enabled", false);
-  user_pref("browser.startup.homepage", "about:blank");
-  user_pref("browser.uiCustomization.state", "{\"placements\":{\"widget-overflow-fixed-list\":[],\"nav-bar\":[\"back-button\",\"forward-button\",\"stop-reload-button\",\"urlbar-container\",\"downloads-button\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"tabbrowser-tabs\",\"new-tab-button\",\"alltabs-button\"],\"PersonalToolbar\":[\"personal-bookmarks\"]},\"seen\":[\"developer-button\",\"https-everywhere_eff_org-browser-action\",\"ublock0_raymondhill_net-browser-action\",\"jid1-mnnxcxisbpnsxq_jetpack-browser-action\",\"woop-noopscoopsnsxq_jetpack-browser-action\"],\"dirtyAreaCache\":[\"nav-bar\",\"toolbar-menubar\",\"TabsToolbar\",\"PersonalToolbar\"],\"currentVersion\":16,\"newElementCount\":3}");
-  user_pref("browser.uidensity", 1);
-  user_pref("browser.urlbar.placeholderName", "Google");
-  user_pref("browser.urlbar.suggest.bookmark", false);
-  user_pref("browser.urlbar.suggest.openpage", false);
-  user_pref("datareporting.healthreport.uploadEnabled", false);
-  user_pref("dom.forms.autocomplete.formautofill", true);
-  user_pref("extensions.activeThemeID", "default-theme@mozilla.org");
-  user_pref("extensions.incognito.migrated", true);
-  user_pref("extensions.lastAppBuildId", "20200120145402");
-  user_pref("extensions.lastAppVersion", "72.0.2");
-  user_pref("extensions.lastPlatformVersion", "72.0.2");
-  user_pref("extensions.pendingOperations", false);
-  user_pref("extensions.systemAddonSet", "{\"schema\":1,\"addons\":{}}");
-  user_pref("extensions.ui.dictionary.hidden", true);
-  user_pref("extensions.ui.locale.hidden", true);
-  user_pref("extensions.webcompat.perform_injections", true);
-  user_pref("extensions.webcompat.perform_ua_overrides", true);
-  user_pref("general.smoothScroll", false);
-  user_pref("media.peerconnection.ice.default_address_only", true);
-  user_pref("media.peerconnection.ice.no_host", true);
-  user_pref("media.videocontrols.picture-in-picture.video-toggle.enabled", false);
-  user_pref("network.dns.disablePrefetch", true);
-  user_pref("network.http.speculative-parallel-limit", 0);
-  user_pref("network.predictor.cleaned-up", true);
-  user_pref("network.predictor.enabled", false);
-  user_pref("network.prefetch-next", false);
-  user_pref("pdfjs.enabledCache.state", false);
-  user_pref("pdfjs.previousHandler.alwaysAskBeforeHandling", true);
-  user_pref("pdfjs.previousHandler.preferredAction", 4);
-  user_pref("privacy.donottrackheader.enabled", true);
-  user_pref("privacy.sanitize.pending", "[]");
-  user_pref("privacy.trackingprotection.enabled", true);
-  user_pref("privacy.trackingprotection.socialtracking.enabled", true);
-  user_pref("services.sync.engine.addresses.available", false);
-  user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
-  user_pref("toolkit.telemetry.reportingpolicy.firstRun", false);
-#+end_src
+
+   Since I change a lot of settings, I just spill this verbatim. It's not
+   actually shown because it's not all that special.
+
+   #+begin_src js :exports none :tangle (expand-file-name "user.js" (getenv "FFDIR"))
+     user_pref("app.shield.optoutstudies.enabled", true);
+     user_pref("browser.aboutConfig.showWarning", false);
+     user_pref("browser.contentblocking.category", "strict");
+     user_pref("browser.ctrlTab.recentlyUsedOrder", false);
+     user_pref("browser.laterrun.enabled", true);
+     user_pref("browser.link.open_newwindow", 2);
+     user_pref("browser.migration.version", 89);
+     user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", false);
+     user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features", false);
+     user_pref("browser.newtabpage.activity-stream.feeds.section.highlights", false);
+     user_pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
+     user_pref("browser.newtabpage.activity-stream.feeds.snippets", false);
+     user_pref("browser.newtabpage.activity-stream.feeds.topsites", false);
+     user_pref("browser.newtabpage.activity-stream.section.highlights.includeBookmarks", false);
+     user_pref("browser.newtabpage.activity-stream.section.highlights.includeDownloads", false);
+     user_pref("browser.newtabpage.activity-stream.section.highlights.includePocket", false);
+     user_pref("browser.newtabpage.activity-stream.section.highlights.includeVisited", false);
+     user_pref("browser.newtabpage.activity-stream.showSearch", false);
+     user_pref("browser.newtabpage.activity-stream.showSponsored", false);
+     user_pref("browser.newtabpage.enabled", false);
+     user_pref("browser.search.suggest.enabled", false);
+     user_pref("browser.startup.homepage", "about:blank");
+     user_pref("browser.uiCustomization.state", "{\"placements\":{\"widget-overflow-fixed-list\":[],\"nav-bar\":[\"back-button\",\"forward-button\",\"stop-reload-button\",\"urlbar-container\",\"downloads-button\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"tabbrowser-tabs\",\"new-tab-button\",\"alltabs-button\"],\"PersonalToolbar\":[\"personal-bookmarks\"]},\"seen\":[\"developer-button\",\"https-everywhere_eff_org-browser-action\",\"ublock0_raymondhill_net-browser-action\",\"jid1-mnnxcxisbpnsxq_jetpack-browser-action\",\"woop-noopscoopsnsxq_jetpack-browser-action\"],\"dirtyAreaCache\":[\"nav-bar\",\"toolbar-menubar\",\"TabsToolbar\",\"PersonalToolbar\"],\"currentVersion\":16,\"newElementCount\":3}");
+     user_pref("browser.uidensity", 1);
+     user_pref("browser.urlbar.placeholderName", "Google");
+     user_pref("browser.urlbar.suggest.bookmark", false);
+     user_pref("browser.urlbar.suggest.openpage", false);
+     user_pref("datareporting.healthreport.uploadEnabled", false);
+     user_pref("dom.forms.autocomplete.formautofill", true);
+     user_pref("extensions.activeThemeID", "default-theme@mozilla.org");
+     user_pref("extensions.incognito.migrated", true);
+     user_pref("extensions.lastAppBuildId", "20200120145402");
+     user_pref("extensions.lastAppVersion", "72.0.2");
+     user_pref("extensions.lastPlatformVersion", "72.0.2");
+     user_pref("extensions.pendingOperations", false);
+     user_pref("extensions.systemAddonSet", "{\"schema\":1,\"addons\":{}}");
+     user_pref("extensions.ui.dictionary.hidden", true);
+     user_pref("extensions.ui.locale.hidden", true);
+     user_pref("extensions.webcompat.perform_injections", true);
+     user_pref("extensions.webcompat.perform_ua_overrides", true);
+     user_pref("general.smoothScroll", false);
+     user_pref("media.peerconnection.ice.default_address_only", true);
+     user_pref("media.peerconnection.ice.no_host", true);
+     user_pref("media.videocontrols.picture-in-picture.video-toggle.enabled", false);
+     user_pref("network.dns.disablePrefetch", true);
+     user_pref("network.http.speculative-parallel-limit", 0);
+     user_pref("network.predictor.cleaned-up", true);
+     user_pref("network.predictor.enabled", false);
+     user_pref("network.prefetch-next", false);
+     user_pref("pdfjs.enabledCache.state", false);
+     user_pref("pdfjs.previousHandler.alwaysAskBeforeHandling", true);
+     user_pref("pdfjs.previousHandler.preferredAction", 4);
+     user_pref("privacy.donottrackheader.enabled", true);
+     user_pref("privacy.sanitize.pending", "[]");
+     user_pref("privacy.trackingprotection.enabled", true);
+     user_pref("privacy.trackingprotection.socialtracking.enabled", true);
+     user_pref("services.sync.engine.addresses.available", false);
+     user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+     user_pref("toolkit.telemetry.reportingpolicy.firstRun", false);
+   #+end_src
 
 ** Ad blocker configuration (=adblock.txt=)
-As reiterated above, this file is not actually automatically applied. It is meant for uBlock Origin. It is not exported because of its length. Suffice to say, it's pretty exhaustive.
-#+begin_src text :tangle (expand-file-name "adblock.txt" (getenv "FFDIR"))
-  {
-    "timeStamp": 1576571108014,
-    "version": "1.24.2",
-    "userSettings": {
-      "advancedUserEnabled": true,
-      "alwaysDetachLogger": true,
-      "autoUpdate": true,
-      "cloudStorageEnabled": false,
-      "collapseBlocked": true,
-      "colorBlindFriendly": false,
-      "contextMenuEnabled": true,
-      "dynamicFilteringEnabled": true,
-      "externalLists": "https://bitbucket.org/nicktabick/adblock-rules/raw/master/nt-adblock.txt\nhttps://dl.dropboxusercontent.com/s/1ybzw9lb7m1qiyl/AAs.txt\nhttps://easylist-downloads.adblockplus.org/adwarefilters.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-annoyance.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-social.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_full.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt\nhttps://easylist-downloads.adblockplus.org/message_seen_remover_for_facebook.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_other.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt\nhttps://fanboy.co.nz/enhancedstats.txt\nhttps://fanboy.co.nz/fanboy-cookiemonster.txt\nhttps://fanboy.co.nz/fanboy-problematic-sites.txt\nhttps://fanboy.co.nz/r/fanboy-complete.txt\nhttps://fanboy.co.nz/r/fanboy-ultimate.txt\nhttps://raw.githubusercontent.com/Akamaru/Adblock-Filterliste/master/filterlist.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareABP.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AncientLibrary/Facebook%20Privacy%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Android%20Scum%20Class%20—%20Fake%20notification%20counters.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AntiAmazonListForTwitch.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/BrowseWebsitesWithoutLoggingIn.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/I%20Don't%20Want%20to%20Download%20Your%20Browser.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/KnowYourMemePureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/SocialShareList.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/TwitchPureViewingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/WikiaPureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Antisocial.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Extreme-Measures.txt\nhttps://raw.githubusercontent.com/LordBadmintonofYorkshire/Overlay-Blocker/master/blocklist.txt\nhttps://raw.githubusercontent.com/Manu1400/i-don-t-care-about-gotoup-btns/master/list-gotoup-btns.txt\nhttps://raw.githubusercontent.com/NeeEoo/AdBlockNeeEoo/master/List.txt\nhttps://raw.githubusercontent.com/Rpsl/adblock-leadgenerator-list/master/list/list.txt\nhttps://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt\nhttps://raw.githubusercontent.com/bcye/Hello-Goodbye/master/filterlist.txt\nhttps://raw.githubusercontent.com/callmenemo491/DodgySiteBlocker/master/DodgySiteBlocker.txt\nhttps://raw.githubusercontent.com/cb-software/CB-Malicious-Domains/master/block_lists/adblock_plus.txt\nhttps://raw.githubusercontent.com/cpeterso/clickbait-blocklist/master/clickbait-blocklist.txt\nhttps://raw.githubusercontent.com/dariusworks/superblock/master/cleanersitesAiO.txt\nhttps://raw.githubusercontent.com/endolith/clickbait/master/clickbait.txt\nhttps://raw.githubusercontent.com/gasull/adblock-nsa/master/filters.txt\nhttps://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt\nhttps://raw.githubusercontent.com/jasonbarone/membership-app-block-list/master/membership-app-block-list.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-wikipedia/master/signed.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-youtube-ads/master/signed.txt\nhttps://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/i-dont-want-your-app.txt\nhttps://raw.githubusercontent.com/piperun/iploggerfilter/master/filterlist\nhttps://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt\nhttps://raw.githubusercontent.com/ryanbr/fanboy-adblock/master/fake-news.txt\nhttps://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/newsletter_filters.txt\nhttps://www.i-dont-care-about-cookies.eu/abp/\nhttps://filters.adtidy.org/extension/ublock/filters/1.txt",
-      "firewallPaneMinimized": false,
-      "hyperlinkAuditingDisabled": true,
-      "ignoreGenericCosmeticFilters": false,
-      "largeMediaSize": 50,
-      "parseAllABPHideFilters": true,
-      "prefetchingDisabled": true,
-      "requestLogMaxEntries": 1000,
-      "showIconBadge": true,
-      "tooltipsDisabled": false,
-      "webrtcIPAddressHidden": true
-    },
-    "selectedFilterLists": [
-      "https://filters.adtidy.org/extension/ublock/filters/1.txt",
-      "user-filters",
-      "ublock-filters",
-      "ublock-annoyances",
-      "ublock-badware",
-      "ublock-experimental",
-      "ublock-privacy",
-      "ublock-abuse",
-      "ublock-unbreak",
-      "awrl-0",
-      "adguard-generic",
-      "adguard-mobile",
-      "easylist",
-      "adguard-spyware",
-      "easyprivacy",
-      "fanboy-enhanced",
-      "disconnect-malvertising",
-      "malware-0",
-      "malware-1",
-      "spam404-0",
-      "adguard-annoyance",
-      "adguard-social",
-      "fanboy-thirdparty_social",
-      "fanboy-cookiemonster",
-      "fanboy-annoyance",
-      "fanboy-social",
-      "dpollock-0",
-      "hphosts",
-      "mvps-0",
-      "plowe-0",
-      "ara-0",
-      "BGR-0",
-      "CHN-1",
-      "CHN-0",
-      "CZE-0",
-      "DEU-0",
-      "EST-0",
-      "FIN-0",
-      "FRA-0",
-      "GRC-0",
-      "HUN-0",
-      "IDN-0",
-      "IRN-0",
-      "ISL-0",
-      "ISR-0",
-      "ITA-1",
-      "ITA-0",
-      "JPN-1",
-      "KOR-0",
-      "KOR-1",
-      "LTU-0",
-      "LVA-0",
-      "NLD-0",
-      "NOR-0",
-      "POL-0",
-      "POL-2",
-      "ROU-1",
-      "RUS-2",
-      "RUS-0",
-      "spa-1",
-      "spa-0",
-      "SVN-0",
-      "SWE-1",
-      "THA-0",
-      "TUR-0",
-      "VIE-1",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/KnowYourMemePureBrowsingExperience.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/WikiaPureBrowsingExperience.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/SocialShareList.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareABP.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/TwitchPureViewingExperience.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/AntiAmazonListForTwitch.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/I%20Don't%20Want%20to%20Download%20Your%20Browser.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Android%20Scum%20Class%20—%20Fake%20notification%20counters.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/BrowseWebsitesWithoutLoggingIn.txt",
-      "https://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt",
-      "https://raw.githubusercontent.com/gasull/adblock-nsa/master/filters.txt",
-      "https://raw.githubusercontent.com/kbinani/adblock-wikipedia/master/signed.txt",
-      "https://raw.githubusercontent.com/kbinani/adblock-youtube-ads/master/signed.txt",
-      "https://dl.dropboxusercontent.com/s/1ybzw9lb7m1qiyl/AAs.txt",
-      "https://easylist-downloads.adblockplus.org/adwarefilters.txt",
-      "https://raw.githubusercontent.com/Akamaru/Adblock-Filterliste/master/filterlist.txt",
-      "https://raw.githubusercontent.com/Hubird-au/Adversity/master/Antisocial.txt",
-      "https://raw.githubusercontent.com/dariusworks/superblock/master/cleanersitesAiO.txt",
-      "https://raw.githubusercontent.com/cb-software/CB-Malicious-Domains/master/block_lists/adblock_plus.txt",
-      "https://raw.githubusercontent.com/cpeterso/clickbait-blocklist/master/clickbait-blocklist.txt",
-      "https://raw.githubusercontent.com/endolith/clickbait/master/clickbait.txt",
-      "https://raw.githubusercontent.com/callmenemo491/DodgySiteBlocker/master/DodgySiteBlocker.txt",
-      "https://raw.githubusercontent.com/Hubird-au/Adversity/master/Extreme-Measures.txt",
-      "https://easylist-downloads.adblockplus.org/fb_annoyances_full.txt",
-      "https://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/AncientLibrary/Facebook%20Privacy%20List.txt",
-      "https://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt",
-      "https://raw.githubusercontent.com/ryanbr/fanboy-adblock/master/fake-news.txt",
-      "https://easylist-downloads.adblockplus.org/fanboy-annoyance.txt",
-      "https://fanboy.co.nz/fanboy-cookiemonster.txt",
-      "https://fanboy.co.nz/enhancedstats.txt",
-      "https://fanboy.co.nz/fanboy-problematic-sites.txt",
-      "https://easylist-downloads.adblockplus.org/fanboy-social.txt",
-      "https://fanboy.co.nz/r/fanboy-complete.txt",
-      "https://fanboy.co.nz/r/fanboy-ultimate.txt",
-      "https://raw.githubusercontent.com/bcye/Hello-Goodbye/master/filterlist.txt",
-      "https://www.i-dont-care-about-cookies.eu/abp/",
-      "https://raw.githubusercontent.com/Manu1400/i-don-t-care-about-gotoup-btns/master/list-gotoup-btns.txt",
-      "https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/i-dont-want-your-app.txt",
-      "https://raw.githubusercontent.com/Rpsl/adblock-leadgenerator-list/master/list/list.txt",
-      "https://raw.githubusercontent.com/jasonbarone/membership-app-block-list/master/membership-app-block-list.txt",
-      "https://easylist-downloads.adblockplus.org/message_seen_remover_for_facebook.txt",
-      "https://raw.githubusercontent.com/NeeEoo/AdBlockNeeEoo/master/List.txt",
-      "https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt",
-      "https://bitbucket.org/nicktabick/adblock-rules/raw/master/nt-adblock.txt",
-      "https://raw.githubusercontent.com/LordBadmintonofYorkshire/Overlay-Blocker/master/blocklist.txt",
-      "https://raw.githubusercontent.com/piperun/iploggerfilter/master/filterlist",
-      "https://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt",
-      "https://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/newsletter_filters.txt",
-      "https://easylist-downloads.adblockplus.org/yt_annoyances_other.txt",
-      "https://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt"
-    ],
-    "hiddenSettings": {
-      "allowGenericProceduralFilters": false,
-      "assetFetchTimeout": 30,
-      "autoCommentFilterTemplate": "{{date}} {{origin}}",
-      "autoUpdateAssetFetchPeriod": 120,
-      "autoUpdateDelayAfterLaunch": 180,
-      "autoUpdatePeriod": 7,
-      "blockingProfiles": "11111/#F00 11011/#C0F 11001/#00F 00001",
-      "cacheStorageAPI": "unset",
-      "cacheStorageCompression": true,
-      "cacheControlForFirefox1376932": "no-cache, no-store, must-revalidate",
-      "consoleLogLevel": "unset",
-      "debugScriptlets": false,
-      "debugScriptletInjector": false,
-      "disableWebAssembly": false,
-      "extensionUpdateForceReload": false,
-      "ignoreRedirectFilters": false,
-      "ignoreScriptInjectFilters": false,
-      "filterAuthorMode": false,
-      "loggerPopupType": "popup",
-      "manualUpdateAssetFetchPeriod": 500,
-      "popupFontSize": "unset",
-      "requestJournalProcessPeriod": 1000,
-      "selfieAfter": 3,
-      "strictBlockingBypassDuration": 120,
-      "suspendTabsUntilReady": "unset",
-      "updateAssetBypassBrowserCache": false,
-      "userResourcesLocation": "unset"
-    },
-    "whitelist": [
-      "about-scheme",
-      "annualcreditreport.transunion.com",
-      "chrome-extension-scheme",
-      "chrome-scheme",
-      "melpa.org",
-      "opera-scheme",
-      "vivaldi-scheme",
-      "www.netteller.com",
-      "wyciwyg-scheme"
-    ],
-    "netWhitelist": "about-scheme\nannualcreditreport.transunion.com\nchrome-extension-scheme\nchrome-scheme\nmelpa.org\nopera-scheme\nvivaldi-scheme\nwww.netteller.com\nwyciwyg-scheme",
-    "dynamicFilteringString": "",
-    "urlFilteringString": "",
-    "hostnameSwitchesString": "no-csp-reports: * true",
-    "userFilters": "! 7/29/2019 https://www.facebook.com\nwww.facebook.com##div.f_1j0s8guc1h.pagelet:nth-of-type(2) > ._1-ia > ._4-u8._20os._2tyk._1-ib._4-u2\n\n! 9/18/2019 https://www.youtube.com\nwww.youtube.com##ytd-button-renderer.size-default.style-default.force-icon-button.ytd-menu-renderer.style-scope:nth-of-type(1)\nwww.youtube.com##ytd-button-renderer.size-default.style-default.force-icon-button.ytd-menu-renderer.style-scope:nth-of-type(2)\n"
-  }
-#+end_src
+
+   As reiterated above, this file is not actually automatically applied. It is
+   meant for uBlock Origin. It is not exported because of its length. Suffice to
+   say, it's pretty exhaustive.
+
+   #+begin_src text :tangle (expand-file-name "adblock.txt" (getenv "FFDIR"))
+     {
+       "timeStamp": 1576571108014,
+       "version": "1.24.2",
+       "userSettings": {
+         "advancedUserEnabled": true,
+         "alwaysDetachLogger": true,
+         "autoUpdate": true,
+         "cloudStorageEnabled": false,
+         "collapseBlocked": true,
+         "colorBlindFriendly": false,
+         "contextMenuEnabled": true,
+         "dynamicFilteringEnabled": true,
+         "externalLists": "https://bitbucket.org/nicktabick/adblock-rules/raw/master/nt-adblock.txt\nhttps://dl.dropboxusercontent.com/s/1ybzw9lb7m1qiyl/AAs.txt\nhttps://easylist-downloads.adblockplus.org/adwarefilters.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-annoyance.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-social.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_full.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt\nhttps://easylist-downloads.adblockplus.org/message_seen_remover_for_facebook.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_other.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt\nhttps://fanboy.co.nz/enhancedstats.txt\nhttps://fanboy.co.nz/fanboy-cookiemonster.txt\nhttps://fanboy.co.nz/fanboy-problematic-sites.txt\nhttps://fanboy.co.nz/r/fanboy-complete.txt\nhttps://fanboy.co.nz/r/fanboy-ultimate.txt\nhttps://raw.githubusercontent.com/Akamaru/Adblock-Filterliste/master/filterlist.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareABP.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AncientLibrary/Facebook%20Privacy%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Android%20Scum%20Class%20—%20Fake%20notification%20counters.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AntiAmazonListForTwitch.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/BrowseWebsitesWithoutLoggingIn.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/I%20Don't%20Want%20to%20Download%20Your%20Browser.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/KnowYourMemePureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/SocialShareList.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/TwitchPureViewingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/WikiaPureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Antisocial.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Extreme-Measures.txt\nhttps://raw.githubusercontent.com/LordBadmintonofYorkshire/Overlay-Blocker/master/blocklist.txt\nhttps://raw.githubusercontent.com/Manu1400/i-don-t-care-about-gotoup-btns/master/list-gotoup-btns.txt\nhttps://raw.githubusercontent.com/NeeEoo/AdBlockNeeEoo/master/List.txt\nhttps://raw.githubusercontent.com/Rpsl/adblock-leadgenerator-list/master/list/list.txt\nhttps://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt\nhttps://raw.githubusercontent.com/bcye/Hello-Goodbye/master/filterlist.txt\nhttps://raw.githubusercontent.com/callmenemo491/DodgySiteBlocker/master/DodgySiteBlocker.txt\nhttps://raw.githubusercontent.com/cb-software/CB-Malicious-Domains/master/block_lists/adblock_plus.txt\nhttps://raw.githubusercontent.com/cpeterso/clickbait-blocklist/master/clickbait-blocklist.txt\nhttps://raw.githubusercontent.com/dariusworks/superblock/master/cleanersitesAiO.txt\nhttps://raw.githubusercontent.com/endolith/clickbait/master/clickbait.txt\nhttps://raw.githubusercontent.com/gasull/adblock-nsa/master/filters.txt\nhttps://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt\nhttps://raw.githubusercontent.com/jasonbarone/membership-app-block-list/master/membership-app-block-list.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-wikipedia/master/signed.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-youtube-ads/master/signed.txt\nhttps://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/i-dont-want-your-app.txt\nhttps://raw.githubusercontent.com/piperun/iploggerfilter/master/filterlist\nhttps://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt\nhttps://raw.githubusercontent.com/ryanbr/fanboy-adblock/master/fake-news.txt\nhttps://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/newsletter_filters.txt\nhttps://www.i-dont-care-about-cookies.eu/abp/\nhttps://filters.adtidy.org/extension/ublock/filters/1.txt",
+         "firewallPaneMinimized": false,
+         "hyperlinkAuditingDisabled": true,
+         "ignoreGenericCosmeticFilters": false,
+         "largeMediaSize": 50,
+         "parseAllABPHideFilters": true,
+         "prefetchingDisabled": true,
+         "requestLogMaxEntries": 1000,
+         "showIconBadge": true,
+         "tooltipsDisabled": false,
+         "webrtcIPAddressHidden": true
+       },
+       "selectedFilterLists": [
+         "https://filters.adtidy.org/extension/ublock/filters/1.txt",
+         "user-filters",
+         "ublock-filters",
+         "ublock-annoyances",
+         "ublock-badware",
+         "ublock-experimental",
+         "ublock-privacy",
+         "ublock-abuse",
+         "ublock-unbreak",
+         "awrl-0",
+         "adguard-generic",
+         "adguard-mobile",
+         "easylist",
+         "adguard-spyware",
+         "easyprivacy",
+         "fanboy-enhanced",
+         "disconnect-malvertising",
+         "malware-0",
+         "malware-1",
+         "spam404-0",
+         "adguard-annoyance",
+         "adguard-social",
+         "fanboy-thirdparty_social",
+         "fanboy-cookiemonster",
+         "fanboy-annoyance",
+         "fanboy-social",
+         "dpollock-0",
+         "hphosts",
+         "mvps-0",
+         "plowe-0",
+         "ara-0",
+         "BGR-0",
+         "CHN-1",
+         "CHN-0",
+         "CZE-0",
+         "DEU-0",
+         "EST-0",
+         "FIN-0",
+         "FRA-0",
+         "GRC-0",
+         "HUN-0",
+         "IDN-0",
+         "IRN-0",
+         "ISL-0",
+         "ISR-0",
+         "ITA-1",
+         "ITA-0",
+         "JPN-1",
+         "KOR-0",
+         "KOR-1",
+         "LTU-0",
+         "LVA-0",
+         "NLD-0",
+         "NOR-0",
+         "POL-0",
+         "POL-2",
+         "ROU-1",
+         "RUS-2",
+         "RUS-0",
+         "spa-1",
+         "spa-0",
+         "SVN-0",
+         "SWE-1",
+         "THA-0",
+         "TUR-0",
+         "VIE-1",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/KnowYourMemePureBrowsingExperience.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/WikiaPureBrowsingExperience.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/SocialShareList.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareABP.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/TwitchPureViewingExperience.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/AntiAmazonListForTwitch.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/I%20Don't%20Want%20to%20Download%20Your%20Browser.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Android%20Scum%20Class%20—%20Fake%20notification%20counters.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/BrowseWebsitesWithoutLoggingIn.txt",
+         "https://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt",
+         "https://raw.githubusercontent.com/gasull/adblock-nsa/master/filters.txt",
+         "https://raw.githubusercontent.com/kbinani/adblock-wikipedia/master/signed.txt",
+         "https://raw.githubusercontent.com/kbinani/adblock-youtube-ads/master/signed.txt",
+         "https://dl.dropboxusercontent.com/s/1ybzw9lb7m1qiyl/AAs.txt",
+         "https://easylist-downloads.adblockplus.org/adwarefilters.txt",
+         "https://raw.githubusercontent.com/Akamaru/Adblock-Filterliste/master/filterlist.txt",
+         "https://raw.githubusercontent.com/Hubird-au/Adversity/master/Antisocial.txt",
+         "https://raw.githubusercontent.com/dariusworks/superblock/master/cleanersitesAiO.txt",
+         "https://raw.githubusercontent.com/cb-software/CB-Malicious-Domains/master/block_lists/adblock_plus.txt",
+         "https://raw.githubusercontent.com/cpeterso/clickbait-blocklist/master/clickbait-blocklist.txt",
+         "https://raw.githubusercontent.com/endolith/clickbait/master/clickbait.txt",
+         "https://raw.githubusercontent.com/callmenemo491/DodgySiteBlocker/master/DodgySiteBlocker.txt",
+         "https://raw.githubusercontent.com/Hubird-au/Adversity/master/Extreme-Measures.txt",
+         "https://easylist-downloads.adblockplus.org/fb_annoyances_full.txt",
+         "https://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/AncientLibrary/Facebook%20Privacy%20List.txt",
+         "https://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt",
+         "https://raw.githubusercontent.com/ryanbr/fanboy-adblock/master/fake-news.txt",
+         "https://easylist-downloads.adblockplus.org/fanboy-annoyance.txt",
+         "https://fanboy.co.nz/fanboy-cookiemonster.txt",
+         "https://fanboy.co.nz/enhancedstats.txt",
+         "https://fanboy.co.nz/fanboy-problematic-sites.txt",
+         "https://easylist-downloads.adblockplus.org/fanboy-social.txt",
+         "https://fanboy.co.nz/r/fanboy-complete.txt",
+         "https://fanboy.co.nz/r/fanboy-ultimate.txt",
+         "https://raw.githubusercontent.com/bcye/Hello-Goodbye/master/filterlist.txt",
+         "https://www.i-dont-care-about-cookies.eu/abp/",
+         "https://raw.githubusercontent.com/Manu1400/i-don-t-care-about-gotoup-btns/master/list-gotoup-btns.txt",
+         "https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/i-dont-want-your-app.txt",
+         "https://raw.githubusercontent.com/Rpsl/adblock-leadgenerator-list/master/list/list.txt",
+         "https://raw.githubusercontent.com/jasonbarone/membership-app-block-list/master/membership-app-block-list.txt",
+         "https://easylist-downloads.adblockplus.org/message_seen_remover_for_facebook.txt",
+         "https://raw.githubusercontent.com/NeeEoo/AdBlockNeeEoo/master/List.txt",
+         "https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt",
+         "https://bitbucket.org/nicktabick/adblock-rules/raw/master/nt-adblock.txt",
+         "https://raw.githubusercontent.com/LordBadmintonofYorkshire/Overlay-Blocker/master/blocklist.txt",
+         "https://raw.githubusercontent.com/piperun/iploggerfilter/master/filterlist",
+         "https://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt",
+         "https://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/newsletter_filters.txt",
+         "https://easylist-downloads.adblockplus.org/yt_annoyances_other.txt",
+         "https://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt"
+       ],
+       "hiddenSettings": {
+         "allowGenericProceduralFilters": false,
+         "assetFetchTimeout": 30,
+         "autoCommentFilterTemplate": "{{date}} {{origin}}",
+         "autoUpdateAssetFetchPeriod": 120,
+         "autoUpdateDelayAfterLaunch": 180,
+         "autoUpdatePeriod": 7,
+         "blockingProfiles": "11111/#F00 11011/#C0F 11001/#00F 00001",
+         "cacheStorageAPI": "unset",
+         "cacheStorageCompression": true,
+         "cacheControlForFirefox1376932": "no-cache, no-store, must-revalidate",
+         "consoleLogLevel": "unset",
+         "debugScriptlets": false,
+         "debugScriptletInjector": false,
+         "disableWebAssembly": false,
+         "extensionUpdateForceReload": false,
+         "ignoreRedirectFilters": false,
+         "ignoreScriptInjectFilters": false,
+         "filterAuthorMode": false,
+         "loggerPopupType": "popup",
+         "manualUpdateAssetFetchPeriod": 500,
+         "popupFontSize": "unset",
+         "requestJournalProcessPeriod": 1000,
+         "selfieAfter": 3,
+         "strictBlockingBypassDuration": 120,
+         "suspendTabsUntilReady": "unset",
+         "updateAssetBypassBrowserCache": false,
+         "userResourcesLocation": "unset"
+       },
+       "whitelist": [
+         "about-scheme",
+         "annualcreditreport.transunion.com",
+         "chrome-extension-scheme",
+         "chrome-scheme",
+         "melpa.org",
+         "opera-scheme",
+         "vivaldi-scheme",
+         "www.netteller.com",
+         "wyciwyg-scheme"
+       ],
+       "netWhitelist": "about-scheme\nannualcreditreport.transunion.com\nchrome-extension-scheme\nchrome-scheme\nmelpa.org\nopera-scheme\nvivaldi-scheme\nwww.netteller.com\nwyciwyg-scheme",
+       "dynamicFilteringString": "",
+       "urlFilteringString": "",
+       "hostnameSwitchesString": "no-csp-reports: * true",
+       "userFilters": "! 7/29/2019 https://www.facebook.com\nwww.facebook.com##div.f_1j0s8guc1h.pagelet:nth-of-type(2) > ._1-ia > ._4-u8._20os._2tyk._1-ib._4-u2\n\n! 9/18/2019 https://www.youtube.com\nwww.youtube.com##ytd-button-renderer.size-default.style-default.force-icon-button.ytd-menu-renderer.style-scope:nth-of-type(1)\nwww.youtube.com##ytd-button-renderer.size-default.style-default.force-icon-button.ytd-menu-renderer.style-scope:nth-of-type(2)\n"
+     }
+   #+end_src
+
