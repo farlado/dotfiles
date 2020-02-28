@@ -855,7 +855,7 @@
       SortIconManager
       NoCaseSensitive
       IconifyByUnmapping
-      IconManagerGeometry "=171x10-0+21" 1
+      IconManagerGeometry "=171x10-0+18"
       NoTitle { "TWM Icon Manager" }
       IconManagerDontShow { "TWM Icon Manager" }
       AutoRaise { "TWM Icon Manager" }
