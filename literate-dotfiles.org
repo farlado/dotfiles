@@ -791,7 +791,6 @@
      - Never do constrained moving
 
      #+begin_src conf-space
-       RandomPlacement
        OpaqueMove
        OpaqueResize
        NoSaveUnders
