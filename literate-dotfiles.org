@@ -891,8 +891,8 @@
      ~xbindkeys~ to bind keys properly!
 
      #+begin_src conf-space
-       "XF86MonBrightnessUp"   = : all : !"brightnessctl s 1%+"
-       "XF86MonBrightnessDown" = : all : !"brightnessctl s 1%-"
+       "XF86MonBrightnessUp"   = : all : !"brightnessctl s 5%+"
+       "XF86MonBrightnessDown" = : all : !"brightnessctl s 5%-"
      #+end_src
 
 **** Volume controls
@@ -999,6 +999,7 @@
            "twm" f.title
            "Run..."     !"rofi -show run &"
            "Screenshot" f.menu "screenshot"
+           "Cycle"      !"emacsclient --eval '(wallpaper-set-wallpaper)'"
            "" f.nop
            "Discord"  !"discord &"
            "Emacs"    !"emacsclient -c --eval '(load-file (user-emacs-file \"init.el\"))' &"
@@ -1286,7 +1287,15 @@
 **** Battery
 
      #+begin_src conf
-       Battery: ${battery_percent}% | \
+       ${font Font Awesome 5 Free:style=Solid:pixelsize=12}\
+       ${if_match ${acpiacadapter} = "on-line"}\
+       ${else}${if_match ${battery_percent} >= "80"}\
+       ${else}${if_match ${battery_percent} >= "60"}\
+       ${else}${if_match ${battery_percent} >= "40"}\
+       ${else}${if_match ${battery_percent} >= "20"}\
+       ${else}${endif}${endif}${endif}${endif}${endif}\
+       ${font Gohu GohuFont:pixelsize=14} \
+       ${battery_percent}% | \
      #+end_src
 
 **** Date
@@ -1294,7 +1303,7 @@
      #+begin_src conf
        ${font Font Awesome 5 Free:style=Solid:pixelsize=12}\
        ${font Gohu GohuFont:pixelsize=14} \
-       ${time %a %d %b} | \
+       ${time %A %d %B %Y} | \
      #+end_src
 
 **** Time
