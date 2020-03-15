@@ -604,7 +604,7 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
     This makes Emacs startup look a lot more consistent.
 
     #+begin_src sh
-      hsetroot -solid "#282a36"
+      hsetroot -solid "#ffffff"
     #+end_src
 
 *** Run the window manager
@@ -624,7 +624,7 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
    preferred visual settings. Some size values determined [[#tangling-the-right-size-values][above]].
 
    #+begin_src conf-unix :noweb yes
-     gtk-theme-name="Ant-Dracula"
+     gtk-theme-name="Plata-Lumine-Compact"
      gtk-icon-theme-name="HighContrast"
      gtk-font-name="Iosevka 10"
      gtk-cursor-theme-name="Bibata_Ice"
@@ -651,7 +651,7 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
 
    #+begin_src conf-unix :noweb yes
      [Settings]
-     gtk-theme-name=Ant-Dracula
+     gtk-theme-name=Plata-Lumine-Compact
      gtk-icon-theme-name=HighContrast
      gtk-font-name=Iosevka 10
      gtk-cursor-theme-name=Bibata_Ice
