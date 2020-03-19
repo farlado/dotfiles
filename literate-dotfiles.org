@@ -43,7 +43,7 @@
 ** Benefits
 
    Dotfiles management is done almost /exclusively/ from within =$XDG_CONFIG_HOME=
-   so I now my git repository doesn't sit bare. This means I don't need to use
+   so now my git repository doesn't sit bare. This means I don't need to use
    that dumb alias I had anymore. /Emacs dotfiles management, baby./ It also means
    all my config files are kept in a single place, which means I don't have to
    dig everywhere for whatever is the matter.
@@ -604,7 +604,7 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
     This makes Emacs startup look a lot more consistent.
 
     #+begin_src sh
-      hsetroot -solid "#ffffff"
+      hsetroot -solid "#282a36"
     #+end_src
 
 *** Run the window manager
@@ -624,7 +624,7 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
    preferred visual settings. Some size values determined [[#tangling-the-right-size-values][above]].
 
    #+begin_src conf-unix :noweb yes
-     gtk-theme-name="Plata-Lumine-Compact"
+     gtk-theme-name="Ant-Dracula"
      gtk-icon-theme-name="HighContrast"
      gtk-font-name="Iosevka 10"
      gtk-cursor-theme-name="Bibata_Ice"
@@ -651,7 +651,7 @@ Because I +am a lazy piece of shit who doesn't like long licenses+ do not think 
 
    #+begin_src conf-unix :noweb yes
      [Settings]
-     gtk-theme-name=Plata-Lumine-Compact
+     gtk-theme-name=Ant-Dracula
      gtk-icon-theme-name=HighContrast
      gtk-font-name=Iosevka 10
      gtk-cursor-theme-name=Bibata_Ice
