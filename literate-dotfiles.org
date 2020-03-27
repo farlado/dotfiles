@@ -654,7 +654,7 @@
          padding = 3
          horizontal_padding = 5
          separator_color = frame
-         startup_notification = true
+         startup_notification = false
 
      [frame]
          width = 3
