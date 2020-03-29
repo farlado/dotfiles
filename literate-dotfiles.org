@@ -213,7 +213,7 @@
     #+begin_src sh
       case $(tty | sed 's/\/dev\/tty//') in
           1) exec startx $XDG_CONFIG_HOME/X11/xinitrc &> /dev/null;;
-          3) exec emacs --batch -q -l $XDG_CONFIG_HOME/emacs/lisp/pdumper.el;;
+          3) exec emacs --batch -q -l $XDG_CONFIG_HOME/emacs/pdumper.el;;
       esac
     #+end_src
 
@@ -568,6 +568,17 @@
 
     #+begin_src sh
       hsetroot -solid "#282a36"
+    #+end_src
+
+*** Use Emacs as the X input manager
+
+    IT WORKS WOOOOOO
+
+    #+begin_src sh
+      export XMODIFIERS=@im=exwm-xim
+      export CLUTTER_IM_MODULE=xim
+      export GTK_IM_MODULE=xim
+      export QT_IM_MODULE=xim
     #+end_src
 
 *** Run the window manager
