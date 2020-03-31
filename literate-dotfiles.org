@@ -86,7 +86,7 @@
    much harm could come from using a pushover license for dotfiles, I am
    publishing this literate Emacs configuration under the WTFPL.
 
-   #+begin_src text :tangle (user-config-file "dotfiles/LICENSE")
+   #+begin_src text :tangle "~/.config/dotfiles/LICENSE"
      DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
      Version 2, December 2004
 
@@ -160,7 +160,7 @@
 * Shell
 ** On login (=$HOME/.zprofile=)
    :properties:
-   :header-args: :tangle (user-home-file ".zprofile")
+   :header-args: :tangle "~/.zprofile"
    :end:
 
    The ~.zprofile~ file is sourced before ~.zshrc~ and is kept slim so that whatever
@@ -182,6 +182,15 @@
 
       export GNUPGHOME="$XDG_CONFIG_HOME/gnupg"
       export ICEAUTHORITY="$XDG_CONFIG_HOME/ICEauthority"
+    #+end_src
+
+    Handling =.Xauthority= properly is tricky because it requires its own section.
+
+    #+begin_src sh
+      export XDG_RUNTIME_DIR=/tmp/$UID-runtime-dir
+      export XAUTHORITY=$XDG_RUNTIME_DIR/Xauthority
+      mkdir -p $XDG_RUNTIME_DIR
+      chmod 0700 $XDG_RUNTIME_DIR
     #+end_src
 
 *** Find an Emacs dump image if exists
@@ -219,7 +228,7 @@
 
 ** Quiet login (=$HOME/.hushlogin=)
    :properties:
-   :header-args: :tangle (user-home-file ".hushlogin")
+   :header-args: :tangle "~/.hushlogin"
    :end:
 
    I don't need to know the last time I logged in, I'd rather the login process
@@ -492,12 +501,6 @@
           emacs --batch \
                 --eval "(require 'org)" \
                 --eval "(setq org-confirm-babel-evaluate nil)" \
-                --eval "(defmacro user-emacs-file (file)
-                          (expand-file-name file user-emacs-directory))" \
-                --eval "(defmacro user-home-file (file)
-                          (expand-file-name file (getenv \"HOME\")))" \
-                --eval "(defmacro user-config-file (file)
-                          (expand-file-name file (getenv \"XDG_CONFIG_HOME\")))" \
                 --eval "(org-babel-tangle-file \"$1\")"
       }
 
@@ -505,12 +508,6 @@
           sudo emacs --batch \
                      --eval "(require 'org)" \
                      --eval "(setq org-confirm-babel-evaluate nil)" \
-                     --eval "(defmacro user-emacs-file (file)
-                               (expand-file-name file user-emacs-directory))" \
-                     --eval "(defmacro user-home-file (file)
-                               (expand-file-name file (getenv \"HOME\")))" \
-                     --eval "(defmacro user-config-file (file)
-                               (expand-file-name file (getenv \"XDG_CONFIG_HOME\")))" \
                      --eval "(org-babel-tangle-file \"$1\")"
       }
     #+end_src
@@ -527,12 +524,19 @@
 * X session
 ** Starting X (=X11/xinitrc=)
   :properties:
-  :header-args: :tangle (user-config-file "X11/xinitrc")
+  :header-args: :tangle "~/.config/X11/xinitrc"
   :end:
 
   Emacs is my daily-driver desktop.  This file is relatively minimal since most
   configuration is done in Emacs itself.
 
+*** Make the X session accessible
+
+    This allows EXWM to load properly.
+
+    #+begin_src sh
+      xhost +SI:localhost:$USER
+    #+end_src
 *** Force 1080p on my W541 displays
 
     Because I limit the resolution to 1080p but my W541 wants to display 3K, I
@@ -591,7 +595,7 @@
 
 ** GTK2 Appearance (=gtk-2.0/gtkrc=)
    :properties:
-   :header-args: :tangle (user-config-file "gtk-2.0/gtkrc")
+   :header-args: :tangle "~/.config/gtk-2.0/gtkrc"
    :end:
 
    These settings apply the theme, cursor, and icons I prefer, along with other
@@ -617,7 +621,7 @@
 
 ** GTK3 appearance (=gtk-3.0/settings.ini=)
    :properties:
-   :header-args: :tangle (user-config-file "gtk-3.0/settings.ini")
+   :header-args: :tangle "~/.config/gtk-3.0/settings.ini"
    :end:
 
    This is the exact same settings as seen in [[#gtk2-appearance-gtkrc][GTK2's configuration]], but instead
@@ -646,7 +650,7 @@
 
    Since Emacs doesn't provide this, I end up having to use something else.
 
-   #+begin_src conf-unix :tangle (user-config-file "dunst/dunstrc")
+   #+begin_src conf-unix :tangle "~/.config/dunst/dunstrc"
      [global]
          font = "Iosevka 10"
          allow_markup = yes
@@ -689,7 +693,7 @@
 
 * Music player (=mpd/mpd.conf=)
   :properties:
-  :header-args: :tangle (user-config-file "mpd/mpd.conf")
+  :header-args: :tangle "~/.config/mpd/mpd.conf"
   :end:
 
   I use ~mpd~, since it interfaces well with EMMS on Emacs.
