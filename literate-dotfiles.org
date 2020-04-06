@@ -180,8 +180,9 @@
       export XDG_LIB_HOME="$HOME/.local/lib"
       export XDG_CACHE_HOME="$HOME/.cache"
 
-      export GNUPGHOME="$XDG_CONFIG_HOME/gnupg"
-      export ICEAUTHORITY="$XDG_CONFIG_HOME/ICEauthority"
+      export GNUPGHOME="$XDG_DATA_HOME/gnupg"
+      export ICEAUTHORITY="$XDG_CACHE_HOME/ICEauthority"
+      export ASPELL_CONF="per-conf $XDG_CONFIG_HOME/aspell/aspell.conf; personal $XDG_CONFIG_HOME/aspell/en.pws; repl $XDG_CONFIG_HOME/aspell/en.prepl"
     #+end_src
 
     Handling =.Xauthority= properly is tricky because it requires its own section.
@@ -824,8 +825,8 @@
 
    #+begin_src text :tangle (expand-file-name "adblock.txt" (getenv "FFDIR"))
      {
-       "timeStamp": 1576571108014,
-       "version": "1.24.2",
+       "timeStamp": 1586157688353,
+       "version": "1.25.2",
        "userSettings": {
          "advancedUserEnabled": true,
          "alwaysDetachLogger": true,
@@ -835,7 +836,7 @@
          "colorBlindFriendly": false,
          "contextMenuEnabled": true,
          "dynamicFilteringEnabled": true,
-         "externalLists": "https://bitbucket.org/nicktabick/adblock-rules/raw/master/nt-adblock.txt\nhttps://dl.dropboxusercontent.com/s/1ybzw9lb7m1qiyl/AAs.txt\nhttps://easylist-downloads.adblockplus.org/adwarefilters.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-annoyance.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-social.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_full.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt\nhttps://easylist-downloads.adblockplus.org/message_seen_remover_for_facebook.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_other.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt\nhttps://fanboy.co.nz/enhancedstats.txt\nhttps://fanboy.co.nz/fanboy-cookiemonster.txt\nhttps://fanboy.co.nz/fanboy-problematic-sites.txt\nhttps://fanboy.co.nz/r/fanboy-complete.txt\nhttps://fanboy.co.nz/r/fanboy-ultimate.txt\nhttps://raw.githubusercontent.com/Akamaru/Adblock-Filterliste/master/filterlist.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareABP.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AncientLibrary/Facebook%20Privacy%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Android%20Scum%20Class%20—%20Fake%20notification%20counters.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AntiAmazonListForTwitch.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/BrowseWebsitesWithoutLoggingIn.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/I%20Don't%20Want%20to%20Download%20Your%20Browser.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/KnowYourMemePureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/SocialShareList.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/TwitchPureViewingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/WikiaPureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Antisocial.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Extreme-Measures.txt\nhttps://raw.githubusercontent.com/LordBadmintonofYorkshire/Overlay-Blocker/master/blocklist.txt\nhttps://raw.githubusercontent.com/Manu1400/i-don-t-care-about-gotoup-btns/master/list-gotoup-btns.txt\nhttps://raw.githubusercontent.com/NeeEoo/AdBlockNeeEoo/master/List.txt\nhttps://raw.githubusercontent.com/Rpsl/adblock-leadgenerator-list/master/list/list.txt\nhttps://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt\nhttps://raw.githubusercontent.com/bcye/Hello-Goodbye/master/filterlist.txt\nhttps://raw.githubusercontent.com/callmenemo491/DodgySiteBlocker/master/DodgySiteBlocker.txt\nhttps://raw.githubusercontent.com/cb-software/CB-Malicious-Domains/master/block_lists/adblock_plus.txt\nhttps://raw.githubusercontent.com/cpeterso/clickbait-blocklist/master/clickbait-blocklist.txt\nhttps://raw.githubusercontent.com/dariusworks/superblock/master/cleanersitesAiO.txt\nhttps://raw.githubusercontent.com/endolith/clickbait/master/clickbait.txt\nhttps://raw.githubusercontent.com/gasull/adblock-nsa/master/filters.txt\nhttps://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt\nhttps://raw.githubusercontent.com/jasonbarone/membership-app-block-list/master/membership-app-block-list.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-wikipedia/master/signed.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-youtube-ads/master/signed.txt\nhttps://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/i-dont-want-your-app.txt\nhttps://raw.githubusercontent.com/piperun/iploggerfilter/master/filterlist\nhttps://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt\nhttps://raw.githubusercontent.com/ryanbr/fanboy-adblock/master/fake-news.txt\nhttps://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/newsletter_filters.txt\nhttps://www.i-dont-care-about-cookies.eu/abp/\nhttps://filters.adtidy.org/extension/ublock/filters/1.txt",
+         "externalLists": "https://bitbucket.org/nicktabick/adblock-rules/raw/master/nt-adblock.txt\nhttps://dl.dropboxusercontent.com/s/1ybzw9lb7m1qiyl/AAs.txt\nhttps://easylist-downloads.adblockplus.org/adwarefilters.txt\nhttps://easylist-downloads.adblockplus.org/antiadblockfilters.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-annoyance.txt\nhttps://easylist-downloads.adblockplus.org/fanboy-social.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_full.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt\nhttps://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt\nhttps://easylist-downloads.adblockplus.org/message_seen_remover_for_facebook.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_other.txt\nhttps://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt\nhttps://fanboy.co.nz/enhancedstats.txt\nhttps://fanboy.co.nz/fanboy-cookiemonster.txt\nhttps://fanboy.co.nz/fanboy-problematic-sites.txt\nhttps://fanboy.co.nz/r/fanboy-complete.txt\nhttps://fanboy.co.nz/r/fanboy-ultimate.txt\nhttps://filters.adtidy.org/extension/ublock/filters/1.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareABP.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AncientLibrary/Facebook%20Privacy%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Android%20Scum%20Class%20—%20Fake%20notification%20counters.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/AntiAmazonListForTwitch.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/BrowseWebsitesWithoutLoggingIn.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/I%20Don't%20Want%20to%20Download%20Your%20Browser.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/KnowYourMemePureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/SocialShareList.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/TwitchPureViewingExperience.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/WikiaPureBrowsingExperience.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Antisocial.txt\nhttps://raw.githubusercontent.com/Hubird-au/Adversity/master/Extreme-Measures.txt\nhttps://raw.githubusercontent.com/LordBadmintonofYorkshire/Overlay-Blocker/master/blocklist.txt\nhttps://raw.githubusercontent.com/Manu1400/i-don-t-care-about-gotoup-btns/master/list-gotoup-btns.txt\nhttps://raw.githubusercontent.com/NeeEoo/AdBlockNeeEoo/master/List.txt\nhttps://raw.githubusercontent.com/Rpsl/adblock-leadgenerator-list/master/list/list.txt\nhttps://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt\nhttps://raw.githubusercontent.com/bcye/Hello-Goodbye/master/filterlist.txt\nhttps://raw.githubusercontent.com/callmenemo491/DodgySiteBlocker/master/DodgySiteBlocker.txt\nhttps://raw.githubusercontent.com/cb-software/CB-Malicious-Domains/master/block_lists/adblock_plus.txt\nhttps://raw.githubusercontent.com/cpeterso/clickbait-blocklist/master/clickbait-blocklist.txt\nhttps://raw.githubusercontent.com/dariusworks/superblock/master/cleanersitesAiO.txt\nhttps://raw.githubusercontent.com/endolith/clickbait/master/clickbait.txt\nhttps://raw.githubusercontent.com/gasull/adblock-nsa/master/filters.txt\nhttps://raw.githubusercontent.com/gfmaster/adblock-korea-contrib/master/filter.txt\nhttps://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt\nhttps://raw.githubusercontent.com/jasonbarone/membership-app-block-list/master/membership-app-block-list.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-wikipedia/master/signed.txt\nhttps://raw.githubusercontent.com/kbinani/adblock-youtube-ads/master/signed.txt\nhttps://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/i-dont-want-your-app.txt\nhttps://raw.githubusercontent.com/piperun/iploggerfilter/master/filterlist\nhttps://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt\nhttps://raw.githubusercontent.com/ryanbr/fanboy-adblock/master/fake-news.txt\nhttps://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/experimental.txt\nhttps://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/newsletter_filters.txt\nhttps://www.i-dont-care-about-cookies.eu/abp/",
          "firewallPaneMinimized": false,
          "hyperlinkAuditingDisabled": true,
          "ignoreGenericCosmeticFilters": false,
@@ -848,16 +849,12 @@
          "webrtcIPAddressHidden": true
        },
        "selectedFilterLists": [
-         "https://filters.adtidy.org/extension/ublock/filters/1.txt",
          "user-filters",
          "ublock-filters",
-         "ublock-annoyances",
          "ublock-badware",
-         "ublock-experimental",
          "ublock-privacy",
          "ublock-abuse",
          "ublock-unbreak",
-         "awrl-0",
          "adguard-generic",
          "adguard-mobile",
          "easylist",
@@ -874,6 +871,7 @@
          "fanboy-cookiemonster",
          "fanboy-annoyance",
          "fanboy-social",
+         "ublock-annoyances",
          "dpollock-0",
          "hphosts",
          "mvps-0",
@@ -896,7 +894,6 @@
          "ITA-1",
          "ITA-0",
          "JPN-1",
-         "KOR-0",
          "KOR-1",
          "LTU-0",
          "LVA-0",
@@ -905,7 +902,6 @@
          "POL-0",
          "POL-2",
          "ROU-1",
-         "RUS-2",
          "RUS-0",
          "spa-1",
          "spa-0",
@@ -914,6 +910,7 @@
          "THA-0",
          "TUR-0",
          "VIE-1",
+         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt",
          "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/KnowYourMemePureBrowsingExperience.txt",
          "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/WikiaPureBrowsingExperience.txt",
          "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/SocialShareList.txt",
@@ -921,23 +918,24 @@
          "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt",
          "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/TwitchPureViewingExperience.txt",
          "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/AntiAmazonListForTwitch.txt",
-         "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Anti-'Notification%20pre-prompt%20banners'%20List.txt",
          "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/I%20Don't%20Want%20to%20Download%20Your%20Browser.txt",
          "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Android%20Scum%20Class%20—%20Fake%20notification%20counters.txt",
          "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/BrowseWebsitesWithoutLoggingIn.txt",
          "https://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt",
          "https://raw.githubusercontent.com/gasull/adblock-nsa/master/filters.txt",
+         "https://easylist-downloads.adblockplus.org/antiadblockfilters.txt",
          "https://raw.githubusercontent.com/kbinani/adblock-wikipedia/master/signed.txt",
          "https://raw.githubusercontent.com/kbinani/adblock-youtube-ads/master/signed.txt",
          "https://dl.dropboxusercontent.com/s/1ybzw9lb7m1qiyl/AAs.txt",
+         "https://filters.adtidy.org/extension/ublock/filters/1.txt",
          "https://easylist-downloads.adblockplus.org/adwarefilters.txt",
-         "https://raw.githubusercontent.com/Akamaru/Adblock-Filterliste/master/filterlist.txt",
          "https://raw.githubusercontent.com/Hubird-au/Adversity/master/Antisocial.txt",
          "https://raw.githubusercontent.com/dariusworks/superblock/master/cleanersitesAiO.txt",
          "https://raw.githubusercontent.com/cb-software/CB-Malicious-Domains/master/block_lists/adblock_plus.txt",
          "https://raw.githubusercontent.com/cpeterso/clickbait-blocklist/master/clickbait-blocklist.txt",
          "https://raw.githubusercontent.com/endolith/clickbait/master/clickbait.txt",
          "https://raw.githubusercontent.com/callmenemo491/DodgySiteBlocker/master/DodgySiteBlocker.txt",
+         "https://fanboy.co.nz/fanboy-cookiemonster.txt",
          "https://raw.githubusercontent.com/Hubird-au/Adversity/master/Extreme-Measures.txt",
          "https://easylist-downloads.adblockplus.org/fb_annoyances_full.txt",
          "https://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt",
@@ -945,7 +943,6 @@
          "https://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt",
          "https://raw.githubusercontent.com/ryanbr/fanboy-adblock/master/fake-news.txt",
          "https://easylist-downloads.adblockplus.org/fanboy-annoyance.txt",
-         "https://fanboy.co.nz/fanboy-cookiemonster.txt",
          "https://fanboy.co.nz/enhancedstats.txt",
          "https://fanboy.co.nz/fanboy-problematic-sites.txt",
          "https://easylist-downloads.adblockplus.org/fanboy-social.txt",
@@ -955,6 +952,7 @@
          "https://www.i-dont-care-about-cookies.eu/abp/",
          "https://raw.githubusercontent.com/Manu1400/i-don-t-care-about-gotoup-btns/master/list-gotoup-btns.txt",
          "https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/i-dont-want-your-app.txt",
+         "https://raw.githubusercontent.com/gfmaster/adblock-korea-contrib/master/filter.txt",
          "https://raw.githubusercontent.com/Rpsl/adblock-leadgenerator-list/master/list/list.txt",
          "https://raw.githubusercontent.com/jasonbarone/membership-app-block-list/master/membership-app-block-list.txt",
          "https://easylist-downloads.adblockplus.org/message_seen_remover_for_facebook.txt",
@@ -964,6 +962,7 @@
          "https://raw.githubusercontent.com/LordBadmintonofYorkshire/Overlay-Blocker/master/blocklist.txt",
          "https://raw.githubusercontent.com/piperun/iploggerfilter/master/filterlist",
          "https://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt",
+         "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/experimental.txt",
          "https://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/newsletter_filters.txt",
          "https://easylist-downloads.adblockplus.org/yt_annoyances_other.txt",
          "https://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt"
@@ -975,10 +974,18 @@
          "autoUpdateAssetFetchPeriod": 120,
          "autoUpdateDelayAfterLaunch": 180,
          "autoUpdatePeriod": 7,
+         "benchmarkDatasetURL": "unset",
          "blockingProfiles": "11111/#F00 11011/#C0F 11001/#00F 00001",
          "cacheStorageAPI": "unset",
          "cacheStorageCompression": true,
          "cacheControlForFirefox1376932": "no-cache, no-store, must-revalidate",
+         "cnameIgnoreList": "unset",
+         "cnameIgnore1stParty": true,
+         "cnameIgnoreExceptions": true,
+         "cnameIgnoreRootDocument": true,
+         "cnameMaxTTL": 120,
+         "cnameReplayFullURL": false,
+         "cnameUncloak": true,
          "consoleLogLevel": "unset",
          "debugScriptlets": false,
          "debugScriptletInjector": false,
@@ -994,6 +1001,7 @@
          "selfieAfter": 3,
          "strictBlockingBypassDuration": 120,
          "suspendTabsUntilReady": "unset",
+         "uiFlavor": "unset",
          "updateAssetBypassBrowserCache": false,
          "userResourcesLocation": "unset"
        },
@@ -1012,7 +1020,7 @@
        "dynamicFilteringString": "",
        "urlFilteringString": "",
        "hostnameSwitchesString": "no-csp-reports: * true",
-       "userFilters": "! 7/29/2019 https://www.facebook.com\nwww.facebook.com##div.f_1j0s8guc1h.pagelet:nth-of-type(2) > ._1-ia > ._4-u8._20os._2tyk._1-ib._4-u2\n\n! 9/18/2019 https://www.youtube.com\nwww.youtube.com##ytd-button-renderer.size-default.style-default.force-icon-button.ytd-menu-renderer.style-scope:nth-of-type(1)\nwww.youtube.com##ytd-button-renderer.size-default.style-default.force-icon-button.ytd-menu-renderer.style-scope:nth-of-type(2)\n"
+       "userFilters": "! 7/29/2019 https://www.facebook.com\nwww.facebook.com##div.f_1j0s8guc1h.pagelet:nth-of-type(2) > ._1-ia > ._4-u8._20os._2tyk._1-ib._4-u2\n"
      }
    #+end_src
 
