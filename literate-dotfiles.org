@@ -183,6 +183,7 @@
       export GNUPGHOME="$XDG_DATA_HOME/gnupg"
       export ICEAUTHORITY="$XDG_CACHE_HOME/ICEauthority"
       export ASPELL_CONF="per-conf $XDG_CONFIG_HOME/aspell/aspell.conf; personal $XDG_CONFIG_HOME/aspell/en.pws; repl $XDG_CONFIG_HOME/aspell/en.prepl"
+      export PYLINTHOME="$XDG_CACHE_HOME/pylist"
     #+end_src
 
     Handling =.Xauthority= properly is tricky because it requires its own section.
