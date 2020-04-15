@@ -54,8 +54,8 @@ NOGZ="YES"        # Don't compress .el files.                                  #
 
 
 ############################# GENERAL PACKAGE INFO #############################
-pkgname="emacs-git"
-pkgver=28.0.50.140549
+pkgname="emacs27-git"
+pkgver=27.0.90.140123
 pkgrel=1
 pkgdesc="GNU Emacs. Development master branch."
 arch=('x86_64')
@@ -64,9 +64,9 @@ license=('GPL3')
 depends=('gnutls' 'libxml2' 'jansson' 'libotf' 'harfbuzz' 'gpm')
 makedepends=('git')
 provides=('emacs' 'emacs-seq')
-conflicts=('emacs' 'emacs26-git' 'emacs-27-git' 'emacs-seq')
+conflicts=('emacs' 'emacs26-git' 'emacs-git' 'emacs-seq')
 replaces=('emacs26-git' 'emacs27-git' 'emacs-seq')
-source=("emacs-git::git://git.savannah.gnu.org/emacs.git")
+source=("emacs27-git::git://git.savannah.gnu.org/emacs.git#tag=emacs-27.0.90")
 options=(!strip)
 md5sums=('SKIP')
 ################################################################################
@@ -164,7 +164,7 @@ fi
 
 ############################### PREPARE TO BUILD ###############################
 pkgver() {
-  cd "$srcdir/emacs-git"
+  cd "$srcdir/emacs27-git"
 
   printf "%s.%s" \
     "$(grep AC_INIT configure.ac | \
@@ -175,19 +175,19 @@ pkgver() {
 # There is no need to run autogen.sh after first checkout.
 # Doing so, breaks incremental compilation.
 prepare() {
-  cd "$srcdir/emacs-git"
+  cd "$srcdir/emacs27-git"
   [[ -x configure ]] || ( ./autogen.sh git && ./autogen.sh autoconf )
 }
 
 if [[ $CHECK == "YES" ]]; then
 check() {
-  cd "$srcdir/emacs-git"
+  cd "$srcdir/emacs27-git"
   make check
 }
 fi
 
 build() {
-  cd "$srcdir/emacs-git"
+  cd "$srcdir/emacs27-git"
 ################################################################################
 
 
@@ -264,7 +264,7 @@ fi
   make $cores
 
   # You may need to run this if 'loaddefs.el' files become corrupt.
-  #cd "$srcdir/emacs-git/lisp"
+  #cd "$srcdir/emacs27-git/lisp"
   #make autoloads
   #cd ../
 
@@ -278,7 +278,7 @@ fi
 }
 
 package() {
-  cd "$srcdir/emacs-git"
+  cd "$srcdir/emacs27-git"
 
   make DESTDIR="$pkgdir/" install
 
