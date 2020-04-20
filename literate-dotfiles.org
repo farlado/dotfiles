@@ -545,17 +545,8 @@
     need to force it.  The displays I dock to also need configuration.
 
     #+begin_src sh
-      xrandr | grep 'DP2-1 connected' 1> /dev/null 2>/dev/null && {
-          xrandr --output eDP1 --off \
-                 --output DP2-1 --mode 1920x1080 --rotate left --pos 0x0 \
-                 --output DP2-2 --primary --rate 75 --mode 1920x1080 --pos 1080x0 \
-                 --output DP2-3 --mode 1920x1080 --rotate right --pos 3000x0
-      } || {
-          xrandr --output eDP1 --primary --mode 1920x1080 --pos 0x0 \
-                 --output DP2-1 --off \
-                 --output DP2-2 --off \
-                 --output DP2-3 --off
-      }
+      xrandr --output eDP1 --primary --mode 1920x1080 --pos 0x0 \
+             --output DP2-1 --off --output DP2-2 --off --output DP2-3 --off
     #+end_src
 
 *** Set an environment variable for the window manager
