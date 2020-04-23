@@ -577,6 +577,13 @@
       export GTK_IM_MODULE=xim
       export QT_IM_MODULE=xim
     #+end_src
+*** Start PulseAudio daemon
+
+    Why isn't this shit starting on its own?
+
+    #+begin_src sh
+      pulseaudio &
+    #+end_src
 
 *** Run the window manager
 
